@@ -59,10 +59,10 @@ describe('AuthDTO', () => {
     describe('loginResponse', () => {
         it('should create response with token and default message', () => {
             const mockSession = {
-                access_token: 'token123',
-                refresh_token: 'refresh123',
-                expires_at: 1234567890,
-            }; // eslint-disable-line camelcase
+                access_token: 'token123', // eslint-disable-line camelcase
+                refresh_token: 'refresh123', // eslint-disable-line camelcase
+                expires_at: 1234567890, // eslint-disable-line camelcase
+            };
             const result = AuthDTO.loginResponse(mockSession);
             expect(result.message).toBe('Login successful');
             expect(result.token).toBe('token123');
