@@ -33,9 +33,8 @@ export const updateSellerRequestStatusUseCase = (
                 await userRepository.updateById(request.userId, {
                     role: 'seller',
                 });
-                await authRepository.updateUserMetadata(request.userId, {
-                    role: 'Seller',
-                });
+
+                await authRepository.updateUserAppMetadata(request.userId, { role: 'seller' });
             } catch (error) {
                 await sellerRequestRepository.updateById(requestId, {
                     status: 'pending',

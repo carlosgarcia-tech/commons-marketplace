@@ -3,11 +3,9 @@ import { CreateUserDTO } from '../../dtos/users/CreateUserDTO.js';
 import { UserResponseDTO } from '../../dtos/users/UserResponseDTO.js';
 
 export const registerUseCase = (authRepository, userRepository) => async (authDTO) => {
-    const { email, password, role = 'buyer' } = authDTO;
+    const { email, password } = authDTO;
 
-    const authResponse = await authRepository.signUp(email, password, {
-        data: { role },
-    });
+    const authResponse = await authRepository.signUp(email, password);
 
     if (authResponse.user && !authResponse.session) {
         return {
@@ -22,7 +20,6 @@ export const registerUseCase = (authRepository, userRepository) => async (authDT
         name: null,
         email: email,
         isApprovedSeller: false,
-        role: role,
     };
 
     const userCreatedDTO = CreateUserDTO.from(newUserDTO);

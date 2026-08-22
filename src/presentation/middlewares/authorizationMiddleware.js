@@ -1,13 +1,7 @@
 import { forbiddenException } from '../exceptions/forbiddenException.js';
 
 export const extractUserRole = (req) => {
-    return (
-        req.user?.app_metadata?.role ||
-        req.user?.user_metadata?.role ||
-        req.user?.raw_user_meta_data?.role ||
-        req.user?.userMetadata?.role ||
-        req.user?.role
-    )?.toLowerCase();
+    return req.user?.app_metadata?.role?.toLowerCase() || 'buyer';
 };
 
 export const isRole =

@@ -11,30 +11,22 @@ describe('AuthDTO', () => {
             expect(result.password).toBe('password123');
         });
 
-        it('should default role to buyer', () => {
+        it('should not include role in the register request', () => {
             const result = AuthDTO.registerRequest({
                 email: 'test@example.com',
                 password: 'password123',
             });
-            expect(result.role).toBe('buyer');
+            expect(result.role).toBeUndefined();
         });
 
-        it('should use custom role when provided', () => {
-            const result = AuthDTO.registerRequest({
-                email: 'test@example.com',
-                password: 'password123',
-                role: 'seller',
-            });
-            expect(result.role).toBe('seller');
-        });
-
-        it('should handle admin role', () => {
+        it('should ignore self-assigned roles to prevent privilege escalation', () => {
             const result = AuthDTO.registerRequest({
                 email: 'test@example.com',
                 password: 'password123',
                 role: 'admin',
             });
-            expect(result.role).toBe('admin');
+            expect(result.role).toBeUndefined();
+            expect(Object.keys(result)).toEqual(['email', 'password']);
         });
     });
 
@@ -66,7 +58,11 @@ describe('AuthDTO', () => {
 
     describe('loginResponse', () => {
         it('should create response with token and default message', () => {
-            const mockSession = { access_token: 'token123', refresh_token: 'refresh123', expires_at: 1234567890 }; // eslint-disable-line camelcase
+            const mockSession = {
+                access_token: 'token123',
+                refresh_token: 'refresh123',
+                expires_at: 1234567890,
+            }; // eslint-disable-line camelcase
             const result = AuthDTO.loginResponse(mockSession);
             expect(result.message).toBe('Login successful');
             expect(result.token).toBe('token123');
