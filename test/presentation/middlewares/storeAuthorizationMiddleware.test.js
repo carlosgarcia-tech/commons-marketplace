@@ -15,7 +15,7 @@ describe('StoreAuthorizationMiddleware Tests', () => {
 
         req = {
             params: { id: 'store123' },
-            user: { id: 'user123', role: 'User' },
+            user: { id: 'user123', app_metadata: { role: 'buyer' } }, // eslint-disable-line camelcase
         };
         res = {
             status: jest.fn().mockReturnThis(),
@@ -25,7 +25,7 @@ describe('StoreAuthorizationMiddleware Tests', () => {
     });
 
     it('should allow admin users to modify any store', async () => {
-        req.user.role = 'Admin';
+        req.user.app_metadata = { role: 'admin' }; // eslint-disable-line camelcase
 
         await middleware(req, res, next);
 
@@ -115,7 +115,7 @@ describe('StoreAuthorizationMiddleware Tests', () => {
     });
 
     it('should work with different admin roles', async () => {
-        req.user.role = 'Admin';
+        req.user.app_metadata = { role: 'Admin' }; // eslint-disable-line camelcase
 
         await middleware(req, res, next);
 

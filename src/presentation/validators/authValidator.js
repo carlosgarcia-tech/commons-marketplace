@@ -19,6 +19,7 @@ export const registerValidation = () => [
         .withMessage('Password must contain at least one lowercase letter')
         .matches(/[0-9]/)
         .withMessage('Password must contain at least one number'),
+    body('role').optional().isIn(['buyer']).withMessage('Role cannot be self-assigned'),
 ];
 
 export const loginValidation = () => [
@@ -29,9 +30,7 @@ export const loginValidation = () => [
         .isEmail()
         .withMessage('Must be a valid email address')
         .normalizeEmail(),
-    body('password')
-        .notEmpty()
-        .withMessage('Password is required'),
+    body('password').notEmpty().withMessage('Password is required'),
 ];
 
 export const refreshTokenValidation = () => [

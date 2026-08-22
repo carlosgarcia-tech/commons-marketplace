@@ -12,7 +12,7 @@ describe('UpdateSellerRequestStatusUseCase', () => {
             updateById: jest.fn(),
         };
         authRepository = {
-            updateUserMetadata: jest.fn(),
+            updateUserAppMetadata: jest.fn(),
         };
         userRepository = {
             updateById: jest.fn(),
@@ -49,7 +49,7 @@ describe('UpdateSellerRequestStatusUseCase', () => {
         sellerRequestRepository.findById.mockResolvedValue(existingRequest);
         sellerRequestRepository.updateById.mockResolvedValue(updatedRequest);
         userRepository.updateById.mockResolvedValue({ role: 'seller', isApprovedSeller: true });
-        authRepository.updateUserMetadata.mockResolvedValue({ role: 'Seller' });
+        authRepository.updateUserAppMetadata.mockResolvedValue({ role: 'seller' });
 
         const result = await useCase(requestId, updateData);
 
@@ -61,8 +61,8 @@ describe('UpdateSellerRequestStatusUseCase', () => {
         expect(userRepository.updateById).toHaveBeenCalledWith('user123', {
             role: 'seller',
         });
-        expect(authRepository.updateUserMetadata).toHaveBeenCalledWith('user123', {
-            role: 'Seller',
+        expect(authRepository.updateUserAppMetadata).toHaveBeenCalledWith('user123', {
+            role: 'seller',
         });
         expect(result).toEqual(updatedRequest);
     });
@@ -94,7 +94,7 @@ describe('UpdateSellerRequestStatusUseCase', () => {
             adminComment: 'Does not meet requirements',
         });
         expect(userRepository.updateById).not.toHaveBeenCalled();
-        expect(authRepository.updateUserMetadata).not.toHaveBeenCalled();
+        expect(authRepository.updateUserAppMetadata).not.toHaveBeenCalled();
         expect(result).toEqual(updatedRequest);
     });
 
@@ -107,7 +107,7 @@ describe('UpdateSellerRequestStatusUseCase', () => {
         await expect(useCase(requestId, updateData)).rejects.toThrow('Seller request not found');
         expect(sellerRequestRepository.updateById).not.toHaveBeenCalled();
         expect(userRepository.updateById).not.toHaveBeenCalled();
-        expect(authRepository.updateUserMetadata).not.toHaveBeenCalled();
+        expect(authRepository.updateUserAppMetadata).not.toHaveBeenCalled();
     });
 
     it('should throw badRequestException when request is already approved', async () => {
@@ -126,7 +126,7 @@ describe('UpdateSellerRequestStatusUseCase', () => {
         );
         expect(sellerRequestRepository.updateById).not.toHaveBeenCalled();
         expect(userRepository.updateById).not.toHaveBeenCalled();
-        expect(authRepository.updateUserMetadata).not.toHaveBeenCalled();
+        expect(authRepository.updateUserAppMetadata).not.toHaveBeenCalled();
     });
 
     it('should throw badRequestException when request is already rejected', async () => {
@@ -196,7 +196,7 @@ describe('UpdateSellerRequestStatusUseCase', () => {
         );
 
         expect(userRepository.updateById).toHaveBeenCalled();
-        expect(authRepository.updateUserMetadata).not.toHaveBeenCalled();
+        expect(authRepository.updateUserAppMetadata).not.toHaveBeenCalled();
         expect(sellerRequestRepository.updateById).toHaveBeenCalledTimes(2);
         expect(sellerRequestRepository.updateById).toHaveBeenLastCalledWith(requestId, {
             status: 'pending',
@@ -221,14 +221,14 @@ describe('UpdateSellerRequestStatusUseCase', () => {
         sellerRequestRepository.findById.mockResolvedValue(existingRequest);
         sellerRequestRepository.updateById.mockResolvedValue(updatedRequest);
         userRepository.updateById.mockResolvedValue({ role: 'seller', isApprovedSeller: true });
-        authRepository.updateUserMetadata.mockRejectedValue(new Error('Supabase error'));
+        authRepository.updateUserAppMetadata.mockRejectedValue(new Error('Supabase error'));
 
         await expect(useCase(requestId, updateData)).rejects.toThrow(
             'Error updating user role: Supabase error',
         );
 
         expect(userRepository.updateById).toHaveBeenCalled();
-        expect(authRepository.updateUserMetadata).toHaveBeenCalled();
+        expect(authRepository.updateUserAppMetadata).toHaveBeenCalled();
         expect(sellerRequestRepository.updateById).toHaveBeenCalledTimes(2);
         expect(sellerRequestRepository.updateById).toHaveBeenLastCalledWith(requestId, {
             status: 'pending',

@@ -2,7 +2,6 @@ export const AuthDTO = {
     registerRequest: (data) => ({
         email: data.email,
         password: data.password,
-        role: data.role || 'buyer',
     }),
 
     registerResponse: (user, message = 'User registered successfully') => ({

@@ -17,7 +17,7 @@ describe('ProductAuthorizationMiddleware Tests', () => {
 
         req = {
             params: { id: 'product123' },
-            user: { id: 'user123', role: 'User' },
+            user: { id: 'user123', app_metadata: { role: 'buyer' } }, // eslint-disable-line camelcase
         };
         res = {
             status: jest.fn().mockReturnThis(),
@@ -27,7 +27,7 @@ describe('ProductAuthorizationMiddleware Tests', () => {
     });
 
     it('should allow admin users to modify any product', async () => {
-        req.user.role = 'Admin';
+        req.user.app_metadata = { role: 'admin' }; // eslint-disable-line camelcase
 
         await middleware(req, res, next);
 
