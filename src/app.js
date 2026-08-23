@@ -15,7 +15,6 @@ import { createCouponRoutes } from './presentation/routes/couponRoutes.js';
 import { createPushRoutes } from './presentation/routes/pushRoutes.js';
 import { verifySupabaseConnection } from './infrastructure/supabase/config/supabaseClient.js';
 import connectDB from './infrastructure/database/db.js';
-import { createIndexes } from './infrastructure/database/indexes.js';
 import { errorHandler } from './presentation/middlewares/errorHandler.js';
 import { apiLimiter } from './presentation/middlewares/rateLimiter.js';
 import logger from './infrastructure/logger/logger.js';
@@ -32,9 +31,8 @@ const createApp = async () => {
     }
     logger.info('MongoDB connection established');
 
-    if (envConfig.nodeEnv !== 'test') {
-        await createIndexes();
-    }
+    // Indexes are declared on the Mongoose schemas (schema.index()) and
+    // created automatically by the driver; no manual index bootstrap here.
 
     const supabaseConnected = await verifySupabaseConnection();
     if (!supabaseConnected) {
