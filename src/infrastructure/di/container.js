@@ -197,6 +197,7 @@ export const createContainer = () => {
 
     const getConversationMessagesUC = getConversationMessagesUseCase({
         messageRepository: messageRepo,
+        conversationRepository: conversationRepo,
         userRepository: userRepo,
         getUserBasicInfo: userService.getUserBasicInfo,
     });

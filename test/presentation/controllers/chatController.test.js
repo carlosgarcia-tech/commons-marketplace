@@ -156,10 +156,14 @@ describe('Message Controller', () => {
 
             await controller(req, res, next);
 
-            expect(getConversationMessagesUseCase.execute).toHaveBeenCalledWith('conv_123', {
-                limit: 50,
-                skip: 0,
-            });
+            expect(getConversationMessagesUseCase.execute).toHaveBeenCalledWith(
+                'conv_123',
+                'user_123',
+                {
+                    limit: 50,
+                    skip: 0,
+                },
+            );
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith({
                 success: true,
@@ -176,10 +180,14 @@ describe('Message Controller', () => {
 
             await controller(req, res, next);
 
-            expect(getConversationMessagesUseCase.execute).toHaveBeenCalledWith('conv_123', {
-                limit: 20,
-                skip: 10,
-            });
+            expect(getConversationMessagesUseCase.execute).toHaveBeenCalledWith(
+                'conv_123',
+                'user_123',
+                {
+                    limit: 20,
+                    skip: 10,
+                },
+            );
             expect(res.status).toHaveBeenCalledWith(200);
         });
 
