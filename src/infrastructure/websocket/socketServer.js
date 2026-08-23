@@ -2,8 +2,55 @@ import { Server } from 'socket.io';
 import { log } from '../logger/logger.js';
 import { setWebSocketServer } from './socket-instance.js';
 import { getEnvironmentConfig } from '../../config/environment.js';
+import supabase from '../supabase/config/supabaseClient.js';
 
 const envConfig = getEnvironmentConfig();
+
+/**
+ * Creates the Socket.io handshake authentication middleware.
+ *
+ * Extracts the bearer token from the handshake payload (or Authorization
+ * header), validates it against Supabase Auth and attaches the verified
+ * user id to `socket.userId` before any event handler can run. Sockets
+ * without a valid token are rejected during the handshake itself.
+ * @param {object} supabaseClient - Supabase client (injectable for testing)
+ * @returns {Function} Socket.io middleware (socket, next)
+ */
+export const createSocketAuthMiddleware = (supabaseClient = supabase) => {
+    return async (socket, next) => {
+        try {
+            const token =
+                socket.handshake?.auth?.token ||
+                socket.handshake?.headers?.authorization?.split(' ')[1];
+
+            if (!token) {
+                log.warn('WebSocket connection rejected: missing token', {
+                    socketId: socket.id,
+                });
+                return next(new Error('Authentication required'));
+            }
+
+            const { data, error } = await supabaseClient.auth.getUser(token);
+
+            if (error || !data?.user) {
+                log.warn('WebSocket connection rejected: invalid token', {
+                    socketId: socket.id,
+                });
+                return next(new Error('Invalid or expired token'));
+            }
+
+            socket.userId = data.user.id;
+            log.debug('WebSocket handshake authenticated', {
+                userId: socket.userId,
+                socketId: socket.id,
+            });
+            return next();
+        } catch (error) {
+            log.error('WebSocket auth middleware error', { error: error.message });
+            return next(new Error('Authentication failed'));
+        }
+    };
+};
 
 /**
  * WebSocket server for real-time communication.
@@ -26,9 +73,17 @@ class WebSocketServer {
         });
 
         this.connectedUsers = new Map();
+        this.setupAuthMiddleware();
         this.setupEventHandlers();
 
         log.info('WebSocket server initialized');
+    }
+
+    /**
+     * Register handshake authentication middleware.
+     */
+    setupAuthMiddleware() {
+        this.io.use(createSocketAuthMiddleware());
     }
 
     /**
@@ -36,16 +91,43 @@ class WebSocketServer {
      */
     setupEventHandlers() {
         this.io.on('connection', (socket) => {
-            log.debug('Client connected', { socketId: socket.id });
+            const userId = socket.userId;
 
-            socket.on('authenticate', (userId) => {
-                this.connectedUsers.set(userId, socket.id);
-                socket.userId = userId;
-                socket.join(`user:${userId}`);
+            if (!userId) {
+                log.warn('Unauthenticated socket disconnected', { socketId: socket.id });
+                socket.disconnect(true);
+                return;
+            }
+
+            this.connectedUsers.set(userId, socket.id);
+            socket.join(`user:${userId}`);
+            log.debug('Client connected', { userId, socketId: socket.id });
+
+            // Identity is established during the authenticated handshake.
+            // Any client-supplied user id is ignored; an optional ack
+            // (in any position) returns the verified identity for backward
+            // compatibility with clients that emit 'authenticate'.
+            socket.on('authenticate', (...args) => {
+                const ack = args.find((arg) => typeof arg === 'function');
+                if (ack) {
+                    ack({ userId });
+                }
                 log.debug('User authenticated', { userId, socketId: socket.id });
             });
 
             socket.on('join-room', (room) => {
+                if (
+                    typeof room === 'string' &&
+                    room.startsWith('user:') &&
+                    room !== `user:${userId}`
+                ) {
+                    log.warn('Blocked attempt to join another user room', {
+                        room,
+                        userId,
+                        socketId: socket.id,
+                    });
+                    return;
+                }
                 socket.join(room);
                 log.debug('User joined room', { room, socketId: socket.id });
             });
@@ -81,7 +163,7 @@ class WebSocketServer {
             });
 
             socket.on('disconnect', () => {
-                if (socket.userId) {
+                if (socket.userId && this.connectedUsers.get(socket.userId) === socket.id) {
                     this.connectedUsers.delete(socket.userId);
                 }
                 log.debug('Client disconnected', { socketId: socket.id });
