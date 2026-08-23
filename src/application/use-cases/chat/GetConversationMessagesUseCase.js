@@ -1,14 +1,30 @@
 import { messageResponseDTO } from '../../dtos/messages/index.js';
 import { log } from '../../../infrastructure/logger/logger.js';
+import { forbiddenException, notFoundException } from '../../../presentation/exceptions/index.js';
 
 export const getConversationMessagesUseCase = ({
     messageRepository,
+    conversationRepository,
     userRepository,
     getUserBasicInfo,
 }) => {
-    const execute = async (conversationId, options = {}) => {
+    const execute = async (conversationId, userId, options = {}) => {
         try {
-            log.debug('Fetching conversation messages', { conversationId, options });
+            log.debug('Fetching conversation messages', { conversationId, userId, options });
+
+            const conversation = await conversationRepository.findById(conversationId);
+
+            if (!conversation) {
+                throw notFoundException('Conversation not found');
+            }
+
+            const isParticipant = conversation.participants.some(
+                (participant) => participant.toString() === userId,
+            );
+
+            if (!isParticipant) {
+                throw forbiddenException('You are not a participant of this conversation');
+            }
 
             const result = await messageRepository.findByConversationId(conversationId, options);
 

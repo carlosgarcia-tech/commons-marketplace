@@ -57,9 +57,10 @@ export const getConversationMessages = ({ getConversationMessagesUseCase }) => {
     return async (req, res, next) => {
         try {
             const { conversationId } = req.params;
+            const userId = req.user.id;
             const { limit = 50, skip = 0 } = req.query;
 
-            const result = await getConversationMessagesUseCase.execute(conversationId, {
+            const result = await getConversationMessagesUseCase.execute(conversationId, userId, {
                 limit: parseInt(limit),
                 skip: parseInt(skip),
             });
