@@ -18,11 +18,21 @@ jest.mock('../../../../src/infrastructure/resilience/circuitBreaker.js', () => {
 });
 
 jest.mock('../../../../src/infrastructure/supabase/config/supabaseClient.js', () => ({
-    auth: {
-        signUp: jest.fn(),
-        signInWithPassword: jest.fn(),
-        signOut: jest.fn(),
-        getUser: jest.fn(),
+    __esModule: true,
+    default: {
+        auth: {
+            signUp: jest.fn(),
+            signInWithPassword: jest.fn(),
+            signOut: jest.fn(),
+            getUser: jest.fn(),
+        },
+    },
+    supabaseAdmin: {
+        auth: {
+            admin: {
+                getUserById: jest.fn(),
+            },
+        },
     },
 }));
 
@@ -173,6 +183,33 @@ describe('AuthRepositoryImpl', () => {
             expect(log.error).toHaveBeenCalledWith('Exception in getUser', {
                 error: error.message,
             });
+        });
+    });
+
+    describe('getUserById', () => {
+        it('should use the admin client to fetch a user by id', async () => {
+            const { supabaseAdmin } = await import(
+                '../../../../src/infrastructure/supabase/config/supabaseClient.js'
+            );
+            const userData = { user: { id: 'user-123' } };
+            supabaseAdmin.auth.admin.getUserById.mockResolvedValue({ data: userData, error: null });
+
+            const result = await AuthRepositoryImpl.getUserById('user-123');
+
+            expect(supabaseAdmin.auth.admin.getUserById).toHaveBeenCalledWith('user-123');
+            expect(result).toEqual(userData);
+        });
+
+        it('should throw an error when the admin lookup fails', async () => {
+            const { supabaseAdmin } = await import(
+                '../../../../src/infrastructure/supabase/config/supabaseClient.js'
+            );
+            const error = new Error('User not found');
+            supabaseAdmin.auth.admin.getUserById.mockResolvedValue({ data: null, error });
+
+            await expect(AuthRepositoryImpl.getUserById('missing-id')).rejects.toThrow(
+                'Failed to get user: User not found',
+            );
         });
     });
 });

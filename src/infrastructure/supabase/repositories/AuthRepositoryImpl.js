@@ -266,7 +266,7 @@ export const AuthRepositoryImpl = {
         try {
             log.debug('Fetching user by ID', { userId });
 
-            const { data, error } = await supabase.auth.admin.getUserById(userId);
+            const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
 
             if (error) {
                 log.error('Error fetching user by ID', { userId, error: error.message });
