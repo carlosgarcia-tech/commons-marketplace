@@ -17,6 +17,7 @@ import { verifySupabaseConnection } from './infrastructure/supabase/config/supab
 import connectDB from './infrastructure/database/db.js';
 import { createIndexes } from './infrastructure/database/indexes.js';
 import { errorHandler } from './presentation/middlewares/errorHandler.js';
+import { apiLimiter } from './presentation/middlewares/rateLimiter.js';
 import logger from './infrastructure/logger/logger.js';
 import { getEnvironmentConfig } from './config/environment.js';
 import { authenticate } from './presentation/middlewares/authMiddleware.js';
@@ -51,14 +52,25 @@ const createApp = async () => {
 
     const container = createContainer();
 
+    // Global API rate limit. Applied once for both /api/v1 and the legacy
+    // /api mounts; the shared limiter instance keeps a single bucket per IP.
+    // /health is intentionally left unlimited so orchestrators can probe it.
+    app.use('/api', apiLimiter);
+
     const v1Router = express.Router();
 
     v1Router.use('/auth', createAuthRoutes(container.authController));
     v1Router.use('/users', createUserRoutes(container.userController));
     v1Router.use('/categories', categoryRoutes(container));
-    v1Router.use('/products', createProductRoutes(container.productController, container.canModifyProduct));
+    v1Router.use(
+        '/products',
+        createProductRoutes(container.productController, container.canModifyProduct),
+    );
     v1Router.use('/stores', createStoreRoutes(container.storeController, container.canModifyStore));
-    v1Router.use('/admin', createAdminRoutes(container.adminController, container.productController));
+    v1Router.use(
+        '/admin',
+        createAdminRoutes(container.adminController, container.productController),
+    );
     v1Router.use('/chat', createChatRoutes(container.chatController));
     v1Router.use('/wishlist', createWishlistRoutes(container.wishlistController));
     v1Router.use('/reviews', createReviewRoutes(container.reviewController));
@@ -75,7 +87,10 @@ const createApp = async () => {
         createProductRoutes(container.productController, container.canModifyProduct),
     );
     app.use('/api/stores', createStoreRoutes(container.storeController, container.canModifyStore));
-    app.use('/api/admin', createAdminRoutes(container.adminController, container.productController));
+    app.use(
+        '/api/admin',
+        createAdminRoutes(container.adminController, container.productController),
+    );
     app.use('/api/chat', createChatRoutes(container.chatController));
     app.use('/api/wishlist', createWishlistRoutes(container.wishlistController));
     app.use('/api/reviews', createReviewRoutes(container.reviewController));

@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
+import { chatLimiter } from '../middlewares/rateLimiter.js';
 import { validate } from '../middlewares/validationMiddleware.js';
 import {
     validateSendMessage,
@@ -22,8 +23,13 @@ export const createChatRoutes = (chatController) => {
         chatController.generateChatToken(req, res, next),
     );
 
-    router.post('/messages', authenticate, validateSendMessage, validate, (req, res, next) =>
-        chatController.sendMessage(req, res, next),
+    router.post(
+        '/messages',
+        authenticate,
+        chatLimiter,
+        validateSendMessage,
+        validate,
+        (req, res, next) => chatController.sendMessage(req, res, next),
     );
 
     router.get(

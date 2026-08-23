@@ -33,7 +33,6 @@ export const authLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     handler: rateLimitHandler,
-    validate: { xForwardedForHeader: false },
 });
 
 /**
@@ -49,7 +48,6 @@ export const apiLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     handler: rateLimitHandler,
-    validate: { xForwardedForHeader: false },
 });
 
 /**
@@ -65,7 +63,6 @@ export const uploadLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     handler: rateLimitHandler,
-    validate: { xForwardedForHeader: false },
 });
 
 /**
@@ -83,7 +80,6 @@ export const passwordResetLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     handler: rateLimitHandler,
-    validate: { xForwardedForHeader: false },
 });
 
 /**
@@ -99,5 +95,4 @@ export const chatLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     handler: rateLimitHandler,
-    validate: { xForwardedForHeader: false },
 });

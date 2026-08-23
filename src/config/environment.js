@@ -43,6 +43,28 @@ const environments = {
     },
 };
 
+/**
+ * Parses the TRUST_PROXY environment variable into a value accepted by
+ * Express `app.set('trust proxy', ...)`.
+ * Accepts hop counts ('1'), 'true'/'false' and express proxy names
+ * such as 'loopback'. Defaults to 1 hop (single reverse proxy, e.g. nginx).
+ * @param {string} [value] - Raw environment variable value
+ * @returns {boolean|string|number} Trust proxy setting for Express
+ */
+const parseTrustProxy = (value) => {
+    if (value === undefined || value === '') {
+        return 1;
+    }
+    if (value === 'true') {
+        return true;
+    }
+    if (value === 'false') {
+        return false;
+    }
+    const parsed = Number(value);
+    return Number.isNaN(parsed) ? value : parsed;
+};
+
 const getEnvironmentConfig = () => {
     const env = process.env.NODE_ENV || 'development';
     const config = environments[env];
@@ -61,6 +83,7 @@ const getEnvironmentConfig = () => {
         supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
         supabaseStorageBucket: process.env.SUPABASE_STORAGE_BUCKET || 'CommonMarketplace',
         ablyApiKey: process.env.ABLY_API_KEY,
+        trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
     };
 };
 
