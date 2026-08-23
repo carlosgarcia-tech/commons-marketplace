@@ -10,8 +10,14 @@ import { log } from '../../infrastructure/logger/logger.js';
 export const errorHandler = (err, req, res, next) => {
     const statusCode = err.statusCode || err.status || 500;
 
+    // Unexpected failures may carry internal details (driver messages,
+    // connection strings, query shapes). Respond with a generic message
+    // and keep the real cause in server-side logs only.
+    const clientMessage =
+        statusCode >= 500 ? 'Internal server error' : err.message || 'Request failed';
+
     const errorResponse = {
-        error: err.message || 'Internal server error',
+        error: clientMessage,
         status: statusCode,
     };
 

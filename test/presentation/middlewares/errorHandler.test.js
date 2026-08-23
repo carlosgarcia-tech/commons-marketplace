@@ -28,26 +28,45 @@ describe('ErrorHandler Middleware', () => {
         process.env.NODE_ENV = 'test';
     });
 
-    it('should handle error with statusCode 500', () => {
-        const error = new Error('Server error');
+    it('should handle error with statusCode 500 without leaking the raw message', () => {
+        const error = new Error('MongoDB driver failure: connection refused at cluster');
         error.statusCode = 500;
 
         errorHandler(error, mockReq, mockRes, mockNext);
 
         expect(mockRes.status).toHaveBeenCalledWith(500);
         expect(mockRes.json).toHaveBeenCalledWith({
-            error: 'Server error',
+            error: 'Internal server error',
             status: 500,
         });
     });
 
-    it('should handle error with status 400', () => {
+    it('should keep the specific message for client errors with statusCode', () => {
+        const error = new Error('User not found');
+        error.statusCode = 404;
+
+        errorHandler(error, mockReq, mockRes, mockNext);
+
+        expect(mockRes.status).toHaveBeenCalledWith(404);
+        expect(mockRes.json).toHaveBeenCalledWith(
+            expect.objectContaining({
+                error: 'User not found',
+            }),
+        );
+    });
+
+    it('should keep the specific message for client errors with status', () => {
         const error = new Error('Client error');
         error.status = 400;
 
         errorHandler(error, mockReq, mockRes, mockNext);
 
         expect(mockRes.status).toHaveBeenCalledWith(400);
+        expect(mockRes.json).toHaveBeenCalledWith(
+            expect.objectContaining({
+                error: 'Client error',
+            }),
+        );
     });
 
     it('should include stack in development mode', () => {
@@ -60,7 +79,7 @@ describe('ErrorHandler Middleware', () => {
         expect(mockRes.json).toHaveBeenCalledWith(
             expect.objectContaining({
                 stack: expect.any(String),
-            })
+            }),
         );
     });
 
@@ -111,7 +130,7 @@ describe('ErrorHandler Middleware', () => {
         expect(mockRes.json).toHaveBeenCalledWith(
             expect.objectContaining({
                 error: 'Internal server error',
-            })
+            }),
         );
     });
 });
