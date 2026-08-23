@@ -105,29 +105,12 @@ const createApp = async () => {
             ip: req.ip,
         });
 
-        const availableRoutes = [
-            '/api/v1/auth',
-            '/api/v1/users',
-            '/api/v1/categories',
-            '/api/v1/products',
-            '/api/v1/stores',
-            '/api/v1/chat',
-            '/api/v1/reviews',
-            '/api/v1/coupons',
-            '/api/v1/seller-requests',
-            '/api/v1/admin',
-            '/health',
-        ];
-
-        if (envConfig.enableSwagger) {
-            availableRoutes.push('/api-docs');
-        }
-
+        // Deliberately generic: listing valid routes would expose the API
+        // surface to anonymous callers.
         res.status(404).json({
             error: 'Route not found',
             path: req.originalUrl,
             method: req.method,
-            availableRoutes,
         });
     });
 
