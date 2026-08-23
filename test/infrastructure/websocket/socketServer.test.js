@@ -16,6 +16,7 @@ jest.mock('socket.io', () => ({
         }),
         to: jest.fn().mockReturnValue({ emit: jest.fn() }),
         emit: jest.fn(),
+        close: jest.fn((callback) => callback()),
     })),
 }));
 
@@ -343,6 +344,13 @@ describe('WebSocketServer', () => {
 
         it('should return empty array when no users connected', () => {
             expect(webSocketServer.getConnectedUsers()).toEqual([]);
+        });
+    });
+
+    describe('close', () => {
+        it('should close the underlying io server and resolve', async () => {
+            await expect(webSocketServer.close()).resolves.toBeUndefined();
+            expect(webSocketServer.io.close).toHaveBeenCalledTimes(1);
         });
     });
 });
