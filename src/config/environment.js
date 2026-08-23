@@ -34,6 +34,15 @@ const environments = {
         enableSwagger: false,
         logLevel: 'error',
     },
+    staging: {
+        corsOrigins: process.env.CORS_ORIGINS
+            ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim())
+            : [],
+        apiUrl: process.env.API_URL || '',
+        uiUrl: process.env.UI_URL || '',
+        enableSwagger: false,
+        logLevel: 'warn',
+    },
     test: {
         corsOrigins: ['http://localhost:3000'],
         apiUrl: 'http://localhost:5000',
