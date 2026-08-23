@@ -211,7 +211,6 @@ describe('Environment Configuration', () => {
                 expect(config.supabaseStorageBucket).toBe('custom-bucket');
             });
         });
-
         describe('Ably configuration', () => {
             beforeEach(() => {
                 process.env.NODE_ENV = 'local';
@@ -226,9 +225,58 @@ describe('Environment Configuration', () => {
 
             it('should handle missing Ably API key', () => {
                 delete process.env.ABLY_API_KEY;
+
                 const config = getEnvironmentConfig();
 
                 expect(config.ablyApiKey).toBeUndefined();
+            });
+        });
+
+        describe('trust proxy configuration', () => {
+            beforeEach(() => {
+                process.env.NODE_ENV = 'local';
+            });
+
+            it('should default to 1 proxy hop when TRUST_PROXY is not set', () => {
+                delete process.env.TRUST_PROXY;
+                const config = getEnvironmentConfig();
+
+                expect(config.trustProxy).toBe(1);
+            });
+
+            it('should default to 1 when TRUST_PROXY is empty string', () => {
+                process.env.TRUST_PROXY = '';
+                const config = getEnvironmentConfig();
+
+                expect(config.trustProxy).toBe(1);
+            });
+
+            it('should parse numeric hop counts', () => {
+                process.env.TRUST_PROXY = '2';
+                const config = getEnvironmentConfig();
+
+                expect(config.trustProxy).toBe(2);
+            });
+
+            it('should accept true literal', () => {
+                process.env.TRUST_PROXY = 'true';
+                const config = getEnvironmentConfig();
+
+                expect(config.trustProxy).toBe(true);
+            });
+
+            it('should accept false literal for setups without proxy', () => {
+                process.env.TRUST_PROXY = 'false';
+                const config = getEnvironmentConfig();
+
+                expect(config.trustProxy).toBe(false);
+            });
+
+            it('should pass through express proxy names like loopback', () => {
+                process.env.TRUST_PROXY = 'loopback';
+                const config = getEnvironmentConfig();
+
+                expect(config.trustProxy).toBe('loopback');
             });
         });
     });

@@ -1,3 +1,5 @@
+import express from 'express';
+import request from 'supertest';
 import {
     authLimiter,
     apiLimiter,
@@ -66,6 +68,50 @@ describe('Rate Limiter Middleware', () => {
             expect(error.statusCode).toBe(429);
             expect(error.message).toBe('Test message');
             expect(error.name).toBe('TooManyRequestsException');
+        });
+    });
+
+    describe('per-client bucketing behind a reverse proxy', () => {
+        const buildApp = () => {
+            const app = express();
+            app.set('trust proxy', 1);
+            app.post('/login', authLimiter, (req, res) => res.status(200).json({ ok: true }));
+            // eslint-disable-next-line no-unused-vars
+            app.use((err, req, res, next) => {
+                res.status(err.statusCode || 500).json({ message: err.message });
+            });
+            return app;
+        };
+
+        it('should not share the limit bucket between different client IPs', async () => {
+            const app = buildApp();
+            const attackerIp = '203.0.113.10';
+            const victimIp = '198.51.100.22';
+
+            for (let attempt = 0; attempt < 5; attempt++) {
+                const res = await request(app).post('/login').set('X-Forwarded-For', attackerIp);
+                expect(res.status).toBe(200);
+            }
+
+            const blocked = await request(app).post('/login').set('X-Forwarded-For', attackerIp);
+            expect(blocked.status).toBe(429);
+
+            const victim = await request(app).post('/login').set('X-Forwarded-For', victimIp);
+            expect(victim.status).toBe(200);
+        });
+
+        it('should resolve req.ip from X-Forwarded-For when trust proxy is enabled', async () => {
+            const app = express();
+            app.set('trust proxy', 1);
+            let seenIp;
+            app.get('/', authLimiter, (req, res) => {
+                seenIp = req.ip;
+                res.status(200).end();
+            });
+
+            await request(app).get('/').set('X-Forwarded-For', '192.0.2.7');
+
+            expect(seenIp).toBe('192.0.2.7');
         });
     });
 });

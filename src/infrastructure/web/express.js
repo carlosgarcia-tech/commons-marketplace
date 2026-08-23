@@ -110,6 +110,12 @@ const setupExpress = (app) => {
     const corsOptions = getCorsOptions();
     const helmetConfig = getHelmetConfig();
 
+    // Must be set before any middleware that relies on req.ip (rate
+    // limiting, logging). Behind a reverse proxy (nginx), Express would
+    // otherwise see the proxy IP for every client and rate limit buckets
+    // would be shared by the whole platform.
+    app.set('trust proxy', envConfig.trustProxy);
+
     app.use(cors(corsOptions));
 
     app.use(helmet(helmetConfig));
