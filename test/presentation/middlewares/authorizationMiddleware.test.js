@@ -2,6 +2,7 @@ import {
     isRole,
     createIsProductOwnerOrAdmin,
     isAdmin,
+    canModifyUser,
 } from '../../../src/presentation/middlewares/authorizationMiddleware.js';
 import { forbiddenException } from '../../../src/presentation/exceptions/forbiddenException.js';
 
@@ -126,6 +127,65 @@ describe('Authorization Middleware', () => {
             };
             isAdmin(req, res, next);
             expect(next).toHaveBeenCalledWith(forbiddenException('Admin access only.'));
+        });
+    });
+
+    describe('canModifyUser', () => {
+        it('should call next when user modifies their own profile', () => {
+            req.user = { id: 'user-123', app_metadata: { role: 'buyer' } }; // eslint-disable-line camelcase
+            req.params.id = 'user-123';
+
+            canModifyUser(req, res, next);
+
+            expect(next).toHaveBeenCalledWith();
+        });
+
+        it('should call next when admin modifies another user', () => {
+            req.user = { id: 'admin-1', app_metadata: { role: 'admin' } }; // eslint-disable-line camelcase
+            req.params.id = 'user-123';
+
+            canModifyUser(req, res, next);
+
+            expect(next).toHaveBeenCalledWith();
+        });
+
+        it('should call next with forbidden exception when modifying another user', () => {
+            req.user = { id: 'attacker-1', app_metadata: { role: 'buyer' } }; // eslint-disable-line camelcase
+            req.params.id = 'victim-1';
+
+            canModifyUser(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(
+                forbiddenException('You are not allowed to modify this user.'),
+            );
+        });
+
+        it('should not grant access from user_metadata admin role', () => {
+            req.user = {
+                id: 'attacker-1',
+                app_metadata: {}, // eslint-disable-line camelcase
+                user_metadata: { role: 'admin' }, // eslint-disable-line camelcase
+            };
+            req.params.id = 'victim-1';
+
+            canModifyUser(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(
+                forbiddenException('You are not allowed to modify this user.'),
+            );
+        });
+
+        it('should call next with error when an unexpected error occurs', () => {
+            req.user = undefined;
+            Object.defineProperty(req, 'params', {
+                get() {
+                    throw new Error('boom');
+                },
+            });
+
+            canModifyUser(req, res, next);
+
+            expect(next).toHaveBeenCalledWith(expect.any(Error));
         });
     });
 });

@@ -1,5 +1,6 @@
 import express from 'express';
 import { authenticate } from '../middlewares/authMiddleware.js';
+import { isRole, canModifyUser } from '../middlewares/authorizationMiddleware.js';
 import { validate } from '../middlewares/validationMiddleware.js';
 import * as UserValidator from '../validators/userValidator.js';
 import { upload } from '../../infrastructure/web/express.js';
@@ -15,7 +16,7 @@ export const createUserRoutes = (userController) => {
         userController.createUser,
     );
 
-    router.get('/', authenticate, userController.getAllUsers);
+    router.get('/', authenticate, isRole('Admin'), userController.getAllUsers);
     router.get('/profile', authenticate, userController.getUserProfile);
 
     router.patch(
@@ -38,6 +39,7 @@ export const createUserRoutes = (userController) => {
         UserValidator.userIdParamValidation(),
         validate,
         authenticate,
+        canModifyUser,
         upload.single('avatar'),
         userController.updateUserById,
     );
@@ -47,6 +49,7 @@ export const createUserRoutes = (userController) => {
         UserValidator.userIdParamValidation(),
         validate,
         authenticate,
+        isRole('Admin'),
         userController.deleteUserById,
     );
 

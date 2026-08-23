@@ -47,3 +47,19 @@ export const isAdmin = (req, res, next) => {
     }
     next();
 };
+
+export const canModifyUser = (req, res, next) => {
+    try {
+        const userId = req.user?.id;
+        const userRole = extractUserRole(req);
+        const targetUserId = req.params.id;
+
+        if (userRole === 'admin' || userId === targetUserId) {
+            return next();
+        }
+
+        return next(forbiddenException('You are not allowed to modify this user.'));
+    } catch (error) {
+        return next(error);
+    }
+};
