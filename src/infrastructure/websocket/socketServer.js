@@ -218,6 +218,18 @@ class WebSocketServer {
     getConnectedUsers() {
         return Array.from(this.connectedUsers.keys());
     }
+
+    /**
+     * Close the Socket.IO server and every open socket connection.
+     * Required for a clean process shutdown; without it server.close()
+     * never completes while sockets remain attached.
+     * @returns {Promise<void>}
+     */
+    close() {
+        return new Promise((resolve) => {
+            this.io.close(() => resolve());
+        });
+    }
 }
 
 export default WebSocketServer;

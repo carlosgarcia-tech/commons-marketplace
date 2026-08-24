@@ -32,10 +32,11 @@ services:
 
     mongodb:
         image: mongo:7
-        ports:
-            - '27017:27017'
-        env_file:
-            - .env.production
+        # No host port published: MongoDB is only reachable from the
+        # internal 'backend' network.
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
+            - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
         volumes:
             - mongodb-data:/data/db
         restart: unless-stopped

@@ -88,6 +88,26 @@ describe('Environment Configuration', () => {
             });
         });
 
+        describe('staging environment', () => {
+            beforeEach(() => {
+                process.env.NODE_ENV = 'staging';
+            });
+
+            it('should return staging configuration', () => {
+                const config = getEnvironmentConfig();
+
+                expect(config.nodeEnv).toBe('staging');
+                expect(config.enableSwagger).toBe(false);
+                expect(config.logLevel).toBe('warn');
+            });
+
+            it('should include staging CORS origins from env or empty array', () => {
+                const config = getEnvironmentConfig();
+
+                expect(Array.isArray(config.corsOrigins)).toBe(true);
+            });
+        });
+
         describe('test environment', () => {
             beforeEach(() => {
                 process.env.NODE_ENV = 'test';

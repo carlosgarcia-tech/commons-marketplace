@@ -1,4 +1,5 @@
 import createApp from './app.js';
+import mongoose from 'mongoose';
 import { getEnvironmentConfig, validateEnvironment } from './config/environment.js';
 import logger from './infrastructure/logger/logger.js';
 import { WebSocketServer } from './infrastructure/websocket/index.js';
@@ -46,23 +47,42 @@ const startServer = async () => {
             );
             logger.info('║                                                                  ║');
             logger.info('╚══════════════════════════════════════════════════════════════════╝');
-
-            new WebSocketServer(server);
         });
 
-        const gracefulShutdown = (signal) => {
-            logger.warn(`${signal} signal received: closing HTTP server`);
+        // app.listen() returns the bound server synchronously; the callback
+        // above only runs once listening, so this reference is always set
+        // before any shutdown signal can arrive.
+        const wsServer = new WebSocketServer(server);
 
-            server.close(() => {
-                logger.info('HTTP server closed');
-                logger.info('MongoDB connection closed');
-                process.exit(0);
-            });
+        let isShuttingDown = false;
 
-            setTimeout(() => {
+        const gracefulShutdown = async (signal) => {
+            if (isShuttingDown) return;
+            isShuttingDown = true;
+
+            logger.warn(`${signal} signal received: closing server`);
+
+            const forceExitTimer = setTimeout(() => {
                 logger.error('Could not close connections in time, forcefully shutting down');
                 process.exit(1);
             }, 10000);
+
+            try {
+                await wsServer.close();
+                logger.info('WebSocket server closed');
+                await server.close();
+                logger.info('HTTP server closed');
+                await mongoose.connection.close(false);
+                logger.info('MongoDB connection closed');
+                clearTimeout(forceExitTimer);
+                process.exit(0);
+            } catch (error) {
+                logger.error('Error during graceful shutdown', {
+                    message: error.message,
+                    stack: error.stack,
+                });
+                process.exit(1);
+            }
         };
 
         process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

@@ -3,16 +3,28 @@ import { createConversation } from '../../../../core/entities/Conversation.js';
 
 /**
  * Create a new conversation
- * @description Creates a conversation between participants
+ * @description Creates a conversation between participants. If a concurrent
+ * request already created the same pair (unique pairKey index), the existing
+ * conversation is returned so find-or-create flows stay race-safe.
  * @param {object} conversationData - Conversation data
- * @returns {Promise<object>} Created conversation
+ * @returns {Promise<object>} Created (or existing) conversation
  */
 export const create = async (conversationData) => {
-    const conversation = new ConversationModel(conversationData);
-    const saved = await conversation.save();
-
-    const result = createConversation(saved.toObject());
-    return result;
+    try {
+        const conversation = await ConversationModel.create(conversationData);
+        return createConversation(conversation.toObject());
+    } catch (error) {
+        if (error?.code === 11000) {
+            const [participant1Id, participant2Id] = [...(conversationData.participants || [])]
+                .map(String)
+                .sort();
+            const existing = await findByParticipants(participant1Id, participant2Id);
+            if (existing) {
+                return existing;
+            }
+        }
+        throw error;
+    }
 };
 
 /**
@@ -93,37 +105,41 @@ export const updateLastMessage = async (conversationId, messageId) => {
 
 /**
  * Increment unread count
- * @description Increments unread message count for a user
+ * @description Atomically increments the unread message count for a user
+ * using $inc, so concurrent message deliveries never lose counts.
  * @param {string} conversationId - Conversation ID
  * @param {string} userId - User ID
  * @returns {Promise<object | null>} Updated conversation
  */
 export const incrementUnreadCount = async (conversationId, userId) => {
-    const conversation = await ConversationModel.findById(conversationId);
-    if (!conversation) return null;
+    const conversation = await ConversationModel.findOneAndUpdate(
+        { _id: conversationId },
+        { $inc: { [`unreadCount.${userId}`]: 1 } },
+        { new: true },
+    )
+        .populate('lastMessage')
+        .lean();
 
-    const currentCount = conversation.unreadCount.get(userId) || 0;
-    conversation.unreadCount.set(userId, currentCount + 1);
-    await conversation.save();
-
-    return createConversation(conversation.toObject());
+    return conversation ? createConversation(conversation) : null;
 };
 
 /**
  * Reset unread count
- * @description Resets unread message count for a user to zero
+ * @description Atomically resets the unread message count for a user to zero.
  * @param {string} conversationId - Conversation ID
  * @param {string} userId - User ID
  * @returns {Promise<object | null>} Updated conversation
  */
 export const resetUnreadCount = async (conversationId, userId) => {
-    const conversation = await ConversationModel.findById(conversationId);
-    if (!conversation) return null;
+    const conversation = await ConversationModel.findOneAndUpdate(
+        { _id: conversationId },
+        { $set: { [`unreadCount.${userId}`]: 0 } },
+        { new: true },
+    )
+        .populate('lastMessage')
+        .lean();
 
-    conversation.unreadCount.set(userId, 0);
-    await conversation.save();
-
-    return createConversation(conversation.toObject());
+    return conversation ? createConversation(conversation) : null;
 };
 
 /**
