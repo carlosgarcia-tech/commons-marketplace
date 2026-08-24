@@ -35,10 +35,16 @@ export class HealthCheck {
 
         const start = Date.now();
         try {
+            // Cheap PostgREST probe. The '_health' table is NOT required
+            // to exist: any structured answer from PostgREST (including
+            // 'table not found' errors, which carry a PGRST* code) proves
+            // DNS + TLS + auth + API reachability, which is what a health
+            // check cares about. Only network-level failures (no code at
+            // all) mean the dependency is truly unreachable.
             const { error } = await supabase.from('_health').select('*').limit(1);
             const latency = Date.now() - start;
 
-            if (error && error.code !== 'PGRST116') {
+            if (error && !error.code) {
                 return { status: 'unhealthy', reason: error.message };
             }
             return { status: 'healthy', latency };
