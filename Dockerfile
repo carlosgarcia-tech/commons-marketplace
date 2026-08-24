@@ -13,7 +13,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN npm run lint || true
+RUN npm run lint
 
 FROM node:20-alpine AS runner
 
