@@ -208,14 +208,14 @@ describe('Environment Configuration', () => {
 
             it('should include all Supabase configuration', () => {
                 process.env.SUPABASE_URL = 'https://test.supabase.co';
-                process.env.SUPABASE_ANON_KEY = 'anon-key-123';
-                process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-key-456';
+                process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_test_key';
+                process.env.SUPABASE_SECRET_KEY = 'sb_secret_test_key';
 
                 const config = getEnvironmentConfig();
 
                 expect(config.supabaseUrl).toBe('https://test.supabase.co');
-                expect(config.supabaseAnonKey).toBe('anon-key-123');
-                expect(config.supabaseServiceRoleKey).toBe('service-key-456');
+                expect(config.supabasePublishableKey).toBe('sb_publishable_test_key');
+                expect(config.supabaseSecretKey).toBe('sb_secret_test_key');
             });
 
             it('should use default storage bucket when not specified', () => {
@@ -305,8 +305,8 @@ describe('Environment Configuration', () => {
         beforeEach(() => {
             process.env.DB_URL = 'mongodb://localhost:27017/test';
             process.env.SUPABASE_URL = 'https://test.supabase.co';
-            process.env.SUPABASE_ANON_KEY = 'anon-key';
-            process.env.SUPABASE_SERVICE_ROLE_KEY = 'service-key';
+            process.env.SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_key';
+            process.env.SUPABASE_SECRET_KEY = 'sb_secret_key';
             process.env.ABLY_API_KEY = 'ably-key';
         });
 
@@ -330,19 +330,19 @@ describe('Environment Configuration', () => {
             );
         });
 
-        it('should throw error when SUPABASE_ANON_KEY is missing', () => {
-            delete process.env.SUPABASE_ANON_KEY;
+        it('should throw error when SUPABASE_PUBLISHABLE_KEY is missing', () => {
+            delete process.env.SUPABASE_PUBLISHABLE_KEY;
 
             expect(() => validateEnvironment()).toThrow(
-                'Missing required environment variables: SUPABASE_ANON_KEY',
+                'Missing required environment variables: SUPABASE_PUBLISHABLE_KEY',
             );
         });
 
-        it('should throw error when SUPABASE_SERVICE_ROLE_KEY is missing', () => {
-            delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+        it('should throw error when SUPABASE_SECRET_KEY is missing', () => {
+            delete process.env.SUPABASE_SECRET_KEY;
 
             expect(() => validateEnvironment()).toThrow(
-                'Missing required environment variables: SUPABASE_SERVICE_ROLE_KEY',
+                'Missing required environment variables: SUPABASE_SECRET_KEY',
             );
         });
 

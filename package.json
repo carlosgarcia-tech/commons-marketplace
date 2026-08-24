@@ -27,7 +27,7 @@
     },
     "homepage": "https://github.com/CARLOSGRCIAGRCIA/commons-marketplace#readme",
     "dependencies": {
-        "@supabase/supabase-js": "^2.75.0",
+        "@supabase/supabase-js": "^2.112.3",
         "ably": "^2.14.0",
         "axios": "^1.13.2",
         "bcrypt": "^6.0.0",
