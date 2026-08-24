@@ -6,33 +6,44 @@ dotenv.config();
 
 /**
  * Ensures that all required environment variables for Supabase are defined.
- * @throws {Error} Throws an error and exits the process if
- * `SUPABASE_URL` or `SUPABASE_ANON_KEY` are not set.
+ * Uses the current Supabase API keys: `SUPABASE_PUBLISHABLE_KEY`
+ * (sb_publishable_...) for public operations and `SUPABASE_SECRET_KEY`
+ * (sb_secret_...) for admin operations.
+ * @throws {Error} Exits the process if any required variable is not set.
  * @description
- * This check guarantees that the Supabase client can be initialized correctly.
- * If the required environment variables are missing, the process terminates
- * to prevent runtime connection issues.
+ * This check guarantees that the Supabase clients can be initialized correctly.
+ * If a required environment variable is missing, the process terminates
+ * to prevent runtime connection issues. There is deliberately no fallback
+ * from the secret key to the publishable key: admin operations would fail
+ * cryptically at runtime.
  */
 const isTest = process.env.NODE_ENV === 'test';
 
-if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
-    log.error('FATAL ERROR: Missing Supabase environment variables', {
-        hasUrl: !!process.env.SUPABASE_URL,
-        hasAnonKey: !!process.env.SUPABASE_ANON_KEY,
-    });
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabasePublishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY;
+
+const missingKeys = [
+    !supabaseUrl && 'SUPABASE_URL',
+    !supabasePublishableKey && 'SUPABASE_PUBLISHABLE_KEY',
+    !supabaseSecretKey && 'SUPABASE_SECRET_KEY',
+].filter(Boolean);
+
+if (missingKeys.length > 0) {
+    log.error('FATAL ERROR: Missing Supabase environment variables', { missingKeys });
     if (!isTest) {
         process.exit(1);
     }
 }
 
 /**
- * Standard Supabase client for regular operations (uses anon key)
+ * Standard Supabase client for regular operations (uses publishable key)
  * @constant
  * @type {import('@supabase/supabase-js').SupabaseClient}
  */
 const supabase = isTest
     ? null
-    : createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY, {
+    : createClient(supabaseUrl, supabasePublishableKey, {
           auth: {
               persistSession: false,
               autoRefreshToken: false,
@@ -43,26 +54,22 @@ const supabase = isTest
 log.info('Supabase client initialized successfully');
 
 /**
- * Admin Supabase client for administrative operations (uses service role key)
+ * Admin Supabase client for administrative operations (uses secret key)
  * @constant
  * @type {import('@supabase/supabase-js').SupabaseClient}
  */
 const supabaseAdmin = isTest
     ? null
-    : createClient(
-          process.env.SUPABASE_URL,
-          process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY,
-          {
-              auth: {
-                  persistSession: false,
-                  autoRefreshToken: false,
-                  detectSessionInUrl: false,
-              },
+    : createClient(supabaseUrl, supabaseSecretKey, {
+          auth: {
+              persistSession: false,
+              autoRefreshToken: false,
+              detectSessionInUrl: false,
           },
-      );
+      });
 
 log.info('Supabase admin client initialized successfully', {
-    hasServiceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    hasSecretKey: !!supabaseSecretKey,
 });
 
 /**

@@ -88,8 +88,8 @@ const getEnvironmentConfig = () => {
         port: parseInt(process.env.PORT || '3000', 10),
         dbUrl: process.env.DB_URL,
         supabaseUrl: process.env.SUPABASE_URL,
-        supabaseAnonKey: process.env.SUPABASE_ANON_KEY,
-        supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY,
+        supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY,
+        supabaseSecretKey: process.env.SUPABASE_SECRET_KEY,
         supabaseStorageBucket: process.env.SUPABASE_STORAGE_BUCKET || 'CommonMarketplace',
         ablyApiKey: process.env.ABLY_API_KEY,
         trustProxy: parseTrustProxy(process.env.TRUST_PROXY),
@@ -100,8 +100,8 @@ const validateEnvironment = () => {
     const required = [
         'DB_URL',
         'SUPABASE_URL',
-        'SUPABASE_ANON_KEY',
-        'SUPABASE_SERVICE_ROLE_KEY',
+        'SUPABASE_PUBLISHABLE_KEY',
+        'SUPABASE_SECRET_KEY',
         'ABLY_API_KEY',
     ];
 
