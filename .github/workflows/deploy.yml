@@ -7,10 +7,6 @@ on:
                 description: 'Image tag to deploy (defaults to latest)'
                 required: false
                 default: 'latest'
-    workflow_run:
-        workflows: ['CI/CD']
-        branches: [main]
-        types: [completed]
 
 permissions:
     contents: read
@@ -23,20 +19,10 @@ jobs:
     deploy:
         name: Deploy via Tailscale SSH
         runs-on: ubuntu-latest
-        if: >
-            github.event_name == 'workflow_dispatch' ||
-            github.event.workflow_run.conclusion == 'success'
         steps:
             - name: Resolve image tag
               id: image
-              run: |
-                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-                      echo "tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
-                  else
-                      # Matches the :sha tag pushed by the CI/CD build job,
-                      # so we always deploy exactly the code that passed checks.
-                      echo "tag=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
-                  fi
+              run: echo "tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
 
             - name: Connect to Tailscale
               uses: tailscale/github-action@v3
