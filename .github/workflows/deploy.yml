@@ -46,6 +46,13 @@ jobs:
             - name: Verify tailnet connectivity
               run: tailscale status
 
+            - name: Ping target host
+              run: |
+                  echo "Checking ${SSH_HOST} is reachable over the tailnet..."
+                  tailscale ping --c 4 --timeout 5s "${SSH_HOST}"
+              env:
+                  SSH_HOST: ${{ secrets.SSH_HOST }}
+
             - name: Deploy over SSH
               uses: appleboy/ssh-action@v1.0.3
               env:
@@ -60,9 +67,6 @@ jobs:
                   ABLY_API_KEY: ${{ secrets.ABLY_API_KEY }}
                   CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
                   TRUST_PROXY: ${{ secrets.TRUST_PROXY }}
-                  VAPID_PUBLIC_KEY: ${{ secrets.VAPID_PUBLIC_KEY }}
-                  VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
-                  VAPID_EMAIL: ${{ secrets.VAPID_EMAIL }}
               with:
                   host: ${{ secrets.SSH_HOST }}
                   username: ${{ secrets.SSH_USERNAME }}
@@ -72,7 +76,6 @@ jobs:
                       IMAGE_TAG,NODE_ENV,PORT,DB_URL,SUPABASE_URL,
                       SUPABASE_PUBLISHABLE_KEY,SUPABASE_SECRET_KEY,
                       SUPABASE_STORAGE_BUCKET,ABLY_API_KEY,CORS_ORIGINS,TRUST_PROXY,
-                      VAPID_PUBLIC_KEY,VAPID_PRIVATE_KEY,VAPID_EMAIL
                   script: |
                       set -euo pipefail
 
@@ -104,9 +107,6 @@ jobs:
                           printf '%s\n' "ABLY_API_KEY=${ABLY_API_KEY}"
                           printf '%s\n' "CORS_ORIGINS=${CORS_ORIGINS}"
                           printf '%s\n' "TRUST_PROXY=${TRUST_PROXY}"
-                          printf '%s\n' "VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}"
-                          printf '%s\n' "VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}"
-                          printf '%s\n' "VAPID_EMAIL=${VAPID_EMAIL}"
                       } > ~/commons-marketplace/.env
                       chmod 600 ~/commons-marketplace/.env
 
