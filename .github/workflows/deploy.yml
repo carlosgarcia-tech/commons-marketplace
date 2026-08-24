@@ -49,7 +49,18 @@ jobs:
             - name: Ping target host
               run: |
                   echo "Checking ${SSH_HOST} is reachable over the tailnet..."
-                  tailscale ping --c 4 --timeout 5s "${SSH_HOST}"
+                  # Any pong counts as reachable, including DERP-relayed
+                  # ones: runner-to-home-server paths usually never get a
+                  # direct P2P connection and tailscale ping would otherwise
+                  # exit non-zero despite full connectivity ('direct
+                  # connection not established').
+                  OUT="$(tailscale ping --c 4 --timeout 5s "${SSH_HOST}" || true)"
+                  echo "$OUT"
+                  if ! echo "$OUT" | grep -q 'pong from'; then
+                      echo "::error::${SSH_HOST} did not answer pings - aborting before touching anything."
+                      exit 1
+                  fi
+                  echo "Host reachable."
               env:
                   SSH_HOST: ${{ secrets.SSH_HOST }}
 
