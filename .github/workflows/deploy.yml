@@ -1,34 +1,158 @@
 name: Deploy
 
 on:
-  workflow_dispatch:
-  workflow_run:
-    workflows: ["CI/CD"]
-    branches: [main]
-    types: [completed]
+    workflow_dispatch:
+        inputs:
+            image_tag:
+                description: 'Image tag to deploy (defaults to latest)'
+                required: false
+                default: 'latest'
+    workflow_run:
+        workflows: ['CI/CD']
+        branches: [main]
+        types: [completed]
+
+permissions:
+    contents: read
+
+concurrency:
+    group: deploy
+    cancel-in-progress: false
 
 jobs:
-  deploy:
-    name: Trigger Render Deploy
-    runs-on: ubuntu-latest
-    if: >
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
-    steps:
-      - name: Trigger deploy on Render
-        env:
-          DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
-        run: |
-          if [ -z "$DEPLOY_HOOK" ]; then
-            echo "ERROR: RENDER_DEPLOY_HOOK secret is empty or not set"
-            exit 1
-          fi
-          echo "Triggering Render deploy..."
-          HTTP_STATUS=$(curl -s -o response.json -w "%{http_code}" "$DEPLOY_HOOK")
-          echo "HTTP Status: $HTTP_STATUS"
-          cat response.json
-          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "201" ]; then
-            echo "Deploy hook failed with status $HTTP_STATUS"
-            exit 1
-          fi
-          echo "Deploy triggered successfully!"
+    deploy:
+        name: Deploy via Tailscale SSH
+        runs-on: ubuntu-latest
+        if: >
+            github.event_name == 'workflow_dispatch' ||
+            github.event.workflow_run.conclusion == 'success'
+        steps:
+            - name: Resolve image tag
+              id: image
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                      echo "tag=${{ inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+                  else
+                      # Matches the :sha tag pushed by the CI/CD build job,
+                      # so we always deploy exactly the code that passed checks.
+                      echo "tag=${{ github.event.workflow_run.head_sha }}" >> "$GITHUB_OUTPUT"
+                  fi
+
+            - name: Connect to Tailscale
+              uses: tailscale/github-action@v3
+              with:
+                  authkey: ${{ secrets.TS_AUTHKEY }}
+
+            - name: Verify tailnet connectivity
+              run: tailscale status
+
+            - name: Ping target host
+              run: |
+                  echo "Checking ${SSH_HOST} is reachable over the tailnet..."
+                  tailscale ping --c 4 --timeout 5s "${SSH_HOST}"
+              env:
+                  SSH_HOST: ${{ secrets.SSH_HOST }}
+
+            - name: Deploy over SSH
+              uses: appleboy/ssh-action@v1.0.3
+              env:
+                  IMAGE_TAG: ${{ steps.image.outputs.tag }}
+                  NODE_ENV: ${{ secrets.NODE_ENV }}
+                  PORT: ${{ secrets.PORT }}
+                  DB_URL: ${{ secrets.DB_URL }}
+                  SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+                  SUPABASE_PUBLISHABLE_KEY: ${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
+                  SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+                  SUPABASE_STORAGE_BUCKET: ${{ secrets.SUPABASE_STORAGE_BUCKET }}
+                  ABLY_API_KEY: ${{ secrets.ABLY_API_KEY }}
+                  CORS_ORIGINS: ${{ secrets.CORS_ORIGINS }}
+                  TRUST_PROXY: ${{ secrets.TRUST_PROXY }}
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USERNAME }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  port: 22
+                  envs: >-
+                      IMAGE_TAG,NODE_ENV,PORT,DB_URL,SUPABASE_URL,
+                      SUPABASE_PUBLISHABLE_KEY,SUPABASE_SECRET_KEY,
+                      SUPABASE_STORAGE_BUCKET,ABLY_API_KEY,CORS_ORIGINS,TRUST_PROXY,
+                  script: |
+                      set -euo pipefail
+
+                      REPO_LOWER="$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+                      IMAGE="ghcr.io/${REPO_LOWER}:${IMAGE_TAG}"
+
+                      echo "Deploying ${IMAGE} ..."
+
+                      docker pull "$IMAGE"
+
+                      # Remember the currently running image so we can roll back.
+                      OLD_IMAGE=""
+                      if docker inspect commons-marketplace > /dev/null 2>&1; then
+                          OLD_IMAGE="$(docker inspect --format '{{.Image}}' commons-marketplace)"
+                      fi
+
+                      mkdir -p ~/commons-marketplace
+                      # printf '%s' writes each secret literally: values
+                      # containing $, backticks or quotes cannot corrupt
+                      # the file or execute anything.
+                      {
+                          printf '%s\n' "NODE_ENV=${NODE_ENV}"
+                          printf '%s\n' "PORT=${PORT}"
+                          printf '%s\n' "DB_URL=${DB_URL}"
+                          printf '%s\n' "SUPABASE_URL=${SUPABASE_URL}"
+                          printf '%s\n' "SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY}"
+                          printf '%s\n' "SUPABASE_SECRET_KEY=${SUPABASE_SECRET_KEY}"
+                          printf '%s\n' "SUPABASE_STORAGE_BUCKET=${SUPABASE_STORAGE_BUCKET}"
+                          printf '%s\n' "ABLY_API_KEY=${ABLY_API_KEY}"
+                          printf '%s\n' "CORS_ORIGINS=${CORS_ORIGINS}"
+                          printf '%s\n' "TRUST_PROXY=${TRUST_PROXY}"
+                      } > ~/commons-marketplace/.env
+                      chmod 600 ~/commons-marketplace/.env
+
+                      echo "Stopping previous container (if any)..."
+                      docker stop commons-marketplace > /dev/null 2>&1 || true
+                      docker rm commons-marketplace > /dev/null 2>&1 || true
+
+                      echo "Starting new container..."
+                      docker run -d \
+                        --name commons-marketplace \
+                        --restart unless-stopped \
+                        -p "${PORT}:${PORT}" \
+                        --env-file ~/commons-marketplace/.env \
+                        "$IMAGE"
+
+                      echo "Waiting for health check..."
+                      HEALTHY=false
+                      for _ in $(seq 1 30); do
+                          if curl -fsS "http://localhost:${PORT}/health" > /dev/null 2>&1; then
+                              HEALTHY=true
+                              break
+                          fi
+                          sleep 2
+                      done
+
+                      if [ "$HEALTHY" != "true" ]; then
+                          echo "::error::Health check failed after 60s. Container logs:"
+                          docker logs commons-marketplace --tail 50 || true
+
+                          if [ -n "$OLD_IMAGE" ]; then
+                              echo "Rolling back to previous image..."
+                              docker stop commons-marketplace > /dev/null 2>&1 || true
+                              docker rm commons-marketplace > /dev/null 2>&1 || true
+                              docker run -d \
+                                --name commons-marketplace \
+                                --restart unless-stopped \
+                                -p "${PORT}:${PORT}" \
+                                --env-file ~/commons-marketplace/.env \
+                                "$OLD_IMAGE"
+                              echo "Rollback completed."
+                          else
+                              echo "No previous image available; leaving failed container for inspection."
+                          fi
+                          exit 1
+                      fi
+
+                      echo "Health check passed."
+                      docker image prune -f
+                      echo "Deploy completado en $(hostname) a las $(date)"
