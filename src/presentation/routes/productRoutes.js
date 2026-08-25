@@ -15,7 +15,7 @@ import * as ProductValidator from '../validators/productValidator.js';
 export function createProductRoutes(productController, canModifyProduct) {
     const router = express.Router();
 
-    router.get('/', ProductValidator.productSearchValidation(), validate, (req, res, next) =>
+    router.get('/', ProductValidator.productListValidation(), validate, (req, res, next) =>
         productController.getAllProducts(req, res, next),
     );
 
@@ -27,9 +27,7 @@ export function createProductRoutes(productController, canModifyProduct) {
         productController.searchProducts(req, res, next),
     );
 
-    router.get('/:idOrSlug', (req, res, next) =>
-        productController.getProductById(req, res, next),
-    );
+    router.get('/:idOrSlug', (req, res, next) => productController.getProductById(req, res, next));
 
     router.get('/:id/related', (req, res, next) =>
         productController.getRelatedProducts(req, res, next),
