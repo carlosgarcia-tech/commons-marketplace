@@ -1,5 +1,6 @@
 import supabase from '../../infrastructure/supabase/config/supabaseClient.js';
 import { unauthorizedException } from '../exceptions/unauthorizedException.js';
+import { UserRepositoryImpl } from '../../infrastructure/database/mongo/repositories/userRepository.js';
 
 /**
  * Express middleware that authenticates requests using a Supabase JWT token.
@@ -37,6 +38,17 @@ export const authenticate = async (req, res, next) => {
 
         req.user = data.user;
         req.token = token;
+
+        // MongoDB is the app's source of truth for roles. The JWT only
+        // proves identity: its metadata snapshot goes stale as soon as a
+        // role is edited in Supabase after login, which used to 403 admin
+        // routes forever. Non-fatal if the profile is missing yet.
+        try {
+            req.mongoUser = (await UserRepositoryImpl.findById(data.user.id)) || null;
+        } catch (dbError) {
+            console.error('[auth] Failed to load user profile:', dbError?.message);
+            req.mongoUser = null;
+        }
         next();
     } catch (error) {
         next(error);

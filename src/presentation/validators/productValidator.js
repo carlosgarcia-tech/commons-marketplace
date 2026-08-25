@@ -66,13 +66,14 @@ export const productIdParamValidation = () => [
         .withMessage('Product ID must be a string'),
 ];
 
-// Listing endpoint: pagination only - the search term is optional here
+// Listing endpoint: pagination only - the search term is optional here.
+// Limit goes up to 1000 so the admin panel can bulk-fetch the catalog.
 export const productListValidation = () => [
     query('page').optional().isInt({ min: 1 }).withMessage('Page must be a positive integer'),
     query('limit')
         .optional()
-        .isInt({ min: 1, max: 100 })
-        .withMessage('Limit must be between 1 and 100'),
+        .isInt({ min: 1, max: 1000 })
+        .withMessage('Limit must be between 1 and 1000'),
 ];
 
 // Dedicated search endpoint: the term is the point of the request
