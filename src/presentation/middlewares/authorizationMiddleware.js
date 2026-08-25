@@ -1,7 +1,12 @@
 import { forbiddenException } from '../exceptions/forbiddenException.js';
 
 export const extractUserRole = (req) => {
-    return req.user?.app_metadata?.role?.toLowerCase() || 'buyer';
+    // MongoDB is authoritative (kept in sync by LoginUseCase from the
+    // Supabase metadata flavors). The app_metadata fallback covers the
+    // window before the first re-login after a role change.
+    return (
+        req.mongoUser?.role?.toLowerCase() || req.user?.app_metadata?.role?.toLowerCase() || 'buyer'
+    );
 };
 
 export const isRole =
