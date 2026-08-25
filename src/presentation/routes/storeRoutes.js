@@ -22,9 +22,11 @@ export function createStoreRoutes(storeController, canModifyStore) {
         authenticate,
         isRole('Seller', 'Admin'),
         uploadLimiter,
+        // multer BEFORE validators: express.json() skips multipart bodies,
+        // so req.body is empty until multer parses the form fields.
+        upload.single('logo'),
         StoreValidator.createStoreValidation(),
         validate,
-        upload.single('logo'),
         (req, res, next) => storeController.createStore(req, res, next),
     );
 
@@ -44,9 +46,10 @@ export function createStoreRoutes(storeController, canModifyStore) {
         isRole('Seller', 'Admin'),
         canModifyStore,
         uploadLimiter,
+        // multer BEFORE validators (same multipart reason as POST)
+        upload.single('logo'),
         StoreValidator.updateStoreValidation(),
         validate,
-        upload.single('logo'),
         (req, res, next) => storeController.updateStore(req, res, next),
     );
 
