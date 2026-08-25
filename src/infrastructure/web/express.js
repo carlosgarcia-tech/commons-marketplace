@@ -151,6 +151,16 @@ const setupExpress = (app) => {
     });
 
     app.get('/', (req, res) => {
+        // Route enumeration is information disclosure: production never
+        // advertises its surface. The full map stays available outside
+        // production for developer convenience.
+        if (envConfig.nodeEnv === 'production') {
+            return res.json({
+                message: 'CommonMarketplace API Service',
+                status: 'running',
+            });
+        }
+
         const endpoints = {
             health: '/health',
             auth: '/api/auth',
@@ -167,7 +177,7 @@ const setupExpress = (app) => {
             endpoints.docs = '/api-docs';
         }
 
-        res.json({
+        return res.json({
             message: 'CommonMarketplace API Service',
             environment: envConfig.nodeEnv,
             status: 'running',
