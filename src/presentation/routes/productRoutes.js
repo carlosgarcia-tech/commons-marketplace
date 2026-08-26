@@ -38,12 +38,14 @@ export function createProductRoutes(productController, canModifyProduct) {
         authenticate,
         isRole('Seller', 'Admin'),
         uploadLimiter,
-        ProductValidator.createProductValidation(),
-        validate,
+        // multer BEFORE validators: express.json() skips multipart bodies,
+        // so req.body is empty until the files middleware parses the form.
         upload.fields([
             { name: 'mainImage', maxCount: 1 },
             { name: 'additionalImages', maxCount: 5 },
         ]),
+        ProductValidator.createProductValidation(),
+        validate,
         (req, res, next) => productController.createProduct(req, res, next),
     );
 
@@ -53,12 +55,13 @@ export function createProductRoutes(productController, canModifyProduct) {
         isRole('Seller', 'Admin'),
         canModifyProduct,
         uploadLimiter,
-        ProductValidator.updateProductValidation(),
-        validate,
+        // multer BEFORE validators (same multipart reason as POST)
         upload.fields([
             { name: 'mainImage', maxCount: 1 },
             { name: 'additionalImages', maxCount: 5 },
         ]),
+        ProductValidator.updateProductValidation(),
+        validate,
         (req, res, next) => productController.updateProduct(req, res, next),
     );
 
