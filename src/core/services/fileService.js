@@ -7,6 +7,18 @@ import { getEnvironmentConfig } from '../../config/environment.js';
 const envConfig = getEnvironmentConfig();
 const isTest = envConfig.nodeEnv === 'test';
 
+// Fail fast with an actionable message instead of a cryptic storage
+// error when the bucket name is missing from the environment.
+const getBucket = () => {
+    const bucket = process.env.SUPABASE_STORAGE_BUCKET;
+    if (!bucket) {
+        throw internalServerError(
+            'Image storage is not configured: SUPABASE_STORAGE_BUCKET is empty. Set the bucket name in the deployment environment and make sure the bucket exists in Supabase.',
+        );
+    }
+    return bucket;
+};
+
 /**
  * Optimizes an image using sharp
  * Resizes to max dimension, converts to webp/jpeg, compresses
@@ -122,7 +134,7 @@ export const uploadImage = async (file, options = {}) => {
         const optimizedBuffer = await optimizeImage(file.buffer, file.mimetype);
 
         const { data, error } = await supabase.storage
-            .from(process.env.SUPABASE_STORAGE_BUCKET)
+            .from(getBucket())
             .upload(filePath, optimizedBuffer, {
                 contentType: file.mimetype,
                 upsert: false,
@@ -133,9 +145,7 @@ export const uploadImage = async (file, options = {}) => {
             throw error;
         }
 
-        const { data: urlData } = supabase.storage
-            .from(process.env.SUPABASE_STORAGE_BUCKET)
-            .getPublicUrl(data.path);
+        const { data: urlData } = supabase.storage.from(getBucket()).getPublicUrl(data.path);
 
         log.info('Image uploaded successfully', { publicUrl: urlData.publicUrl });
         return urlData.publicUrl;
@@ -163,12 +173,10 @@ export const uploadMultipleImages = async (files, options = {}) => {
             const fileName = generateFileName(file.originalname, prefix);
             const filePath = folder ? `${folder}/${fileName}` : fileName;
 
-            return supabase.storage
-                .from(process.env.SUPABASE_STORAGE_BUCKET)
-                .upload(filePath, file.buffer, {
-                    contentType: file.mimetype,
-                    upsert: false,
-                });
+            return supabase.storage.from(getBucket()).upload(filePath, file.buffer, {
+                contentType: file.mimetype,
+                upsert: false,
+            });
         });
 
         const results = await Promise.all(uploadPromises);
@@ -181,7 +189,7 @@ export const uploadMultipleImages = async (files, options = {}) => {
 
         const publicUrls = results.map((result) => {
             const { data: urlData } = supabase.storage
-                .from(process.env.SUPABASE_STORAGE_BUCKET)
+                .from(getBucket())
                 .getPublicUrl(result.data.path);
             return urlData.publicUrl;
         });
@@ -208,9 +216,7 @@ export const deleteImage = async (imageUrl) => {
         const filePath = extractPathFromUrl(imageUrl);
         log.debug('Deleting image', { imageUrl, filePath });
 
-        const { error } = await supabase.storage
-            .from(process.env.SUPABASE_STORAGE_BUCKET)
-            .remove([filePath]);
+        const { error } = await supabase.storage.from(getBucket()).remove([filePath]);
 
         if (error) {
             log.error('Supabase delete error', { error: error.message, filePath });
@@ -239,9 +245,7 @@ export const deleteMultipleImages = async (imageUrls) => {
         const filePaths = imageUrls.filter((url) => url).map((url) => extractPathFromUrl(url));
         log.debug('Deleting multiple images', { count: filePaths.length });
 
-        const { data, error } = await supabase.storage
-            .from(process.env.SUPABASE_STORAGE_BUCKET)
-            .remove(filePaths);
+        const { data, error } = await supabase.storage.from(getBucket()).remove(filePaths);
 
         if (error) {
             log.error('Supabase multiple delete error', {
