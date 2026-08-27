@@ -14,9 +14,10 @@ describe('ReviewController', () => {
     describe('createReview', () => {
         it('should create a review successfully', async () => {
             const req = {
-                user: { userId: 'user123' },
+                user: { id: 'user123' },
                 body: {
-                    userId: 'user123',
+                    type: 'product',
+                    productId: 'product123',
                     commentary: 'Great product!',
                     score: 5,
                 },
@@ -40,6 +41,7 @@ describe('ReviewController', () => {
 
             await controller.createReview(req, res, next);
 
+            expect(mockDependencies.resolve).toHaveBeenCalledWith('createReviewUseCase');
             expect(res.status).toHaveBeenCalledWith(201);
             expect(res.json).toHaveBeenCalledWith({
                 message: 'Review created successfully',
@@ -48,11 +50,12 @@ describe('ReviewController', () => {
             expect(next).not.toHaveBeenCalled();
         });
 
-        it('should return 403 when user tries to create review for another user', async () => {
+        it('should use user id from req.user', async () => {
             const req = {
-                user: { userId: 'user123' },
+                user: { id: 'user123' },
                 body: {
-                    userId: 'differentUser',
+                    type: 'product',
+                    productId: 'product123',
                     commentary: 'Great product!',
                     score: 5,
                 },
@@ -63,20 +66,32 @@ describe('ReviewController', () => {
             };
             const next = jest.fn();
 
+            const createReviewUseCase = jest.fn().mockResolvedValue({
+                id: 'review123',
+                userId: 'user123',
+            });
+
+            mockDependencies.resolve.mockReturnValue(createReviewUseCase);
+
             await controller.createReview(req, res, next);
 
-            expect(res.status).toHaveBeenCalledWith(403);
-            expect(res.json).toHaveBeenCalledWith({
-                error: 'Not authorized to create review for this user',
+            expect(createReviewUseCase).toHaveBeenCalledWith({
+                userId: 'user123',
+                type: 'product',
+                productId: 'product123',
+                storeId: undefined,
+                commentary: 'Great product!',
+                score: 5,
             });
             expect(next).not.toHaveBeenCalled();
         });
 
         it('should call next with error when use case throws error', async () => {
             const req = {
-                user: { userId: 'user123' },
+                user: { id: 'user123' },
                 body: {
-                    userId: 'user123',
+                    type: 'product',
+                    productId: 'product123',
                     commentary: 'Great product!',
                     score: 5,
                 },
