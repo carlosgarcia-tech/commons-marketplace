@@ -11,8 +11,12 @@ jest.mock('express-validator', () => {
         isString: jest.fn().mockReturnThis(),
         isInt: jest.fn().mockReturnThis(),
         isLength: jest.fn().mockReturnThis(),
+        isMongoId: jest.fn().mockReturnThis(),
+        isIn: jest.fn().mockReturnThis(),
         optional: jest.fn().mockReturnThis(),
         withMessage: jest.fn().mockReturnThis(),
+        if: jest.fn().mockReturnThis(),
+        equals: jest.fn().mockReturnThis(),
     };
 
     return {
@@ -31,7 +35,7 @@ describe('ReviewValidator', () => {
     });
 
     describe('createReviewValidation', () => {
-        it('should validate userId field', () => {
+        it('should validate type field', () => {
             const validations = createReviewValidation();
 
             validations.forEach((validation) => {
@@ -40,8 +44,32 @@ describe('ReviewValidator', () => {
                 }
             });
 
-            expect(body).toHaveBeenCalledWith('userId');
-            expect(body).toHaveBeenCalledTimes(3);
+            expect(body).toHaveBeenCalledWith('type');
+            expect(body).toHaveBeenCalledTimes(7);
+        });
+
+        it('should validate productId field', () => {
+            const validations = createReviewValidation();
+
+            validations.forEach((validation) => {
+                if (typeof validation === 'function') {
+                    validation();
+                }
+            });
+
+            expect(body).toHaveBeenCalledWith('productId');
+        });
+
+        it('should validate storeId field', () => {
+            const validations = createReviewValidation();
+
+            validations.forEach((validation) => {
+                if (typeof validation === 'function') {
+                    validation();
+                }
+            });
+
+            expect(body).toHaveBeenCalledWith('storeId');
         });
 
         it('should validate commentary field', () => {
