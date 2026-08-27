@@ -5,11 +5,23 @@ import { body, param } from 'express-validator';
  * @returns {Array} Array of express-validator validation rules
  */
 export const createReviewValidation = () => [
-    body('userId')
+    body('type')
         .notEmpty()
-        .withMessage('User ID is required')
-        .isString()
-        .withMessage('User ID must be a string'),
+        .withMessage('Review type is required')
+        .isIn(['product', 'store'])
+        .withMessage('Review type must be either product or store'),
+    body('productId')
+        .if(body('type').equals('product'))
+        .notEmpty()
+        .withMessage('Product ID is required for product reviews')
+        .isMongoId()
+        .withMessage('Product ID must be a valid ObjectId'),
+    body('storeId')
+        .if(body('type').equals('store'))
+        .notEmpty()
+        .withMessage('Store ID is required for store reviews')
+        .isMongoId()
+        .withMessage('Store ID must be a valid ObjectId'),
     body('commentary')
         .notEmpty()
         .withMessage('Commentary is required')
