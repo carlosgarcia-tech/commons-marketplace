@@ -65,16 +65,22 @@ export function createCreateProductDTO({
         );
     }
 
-    const autoSlug = name
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '') + '-' + Date.now().toString(36);
+    const autoSlug =
+        name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, '') +
+        '-' +
+        Date.now().toString(36);
+
+    const autoSeoTitle = (seoTitle ?? name ?? '').slice(0, 70);
+    const autoSeoDescription = (seoDescription ?? description ?? '').slice(0, 160);
 
     return {
         name,
         slug: slug || autoSlug,
-        seoTitle: seoTitle ?? name,
-        seoDescription: seoDescription ?? description?.slice(0, 160),
+        seoTitle: autoSeoTitle,
+        seoDescription: autoSeoDescription,
         description,
         price,
         stock,

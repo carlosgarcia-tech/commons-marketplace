@@ -35,6 +35,20 @@ export const createProductValidation = () => [
     body('subCategoryId').optional().isString().withMessage('Sub-category ID must be a string'),
     body('storeId').optional().isString().withMessage('Store ID must be a string'),
     body('storeSlug').optional().isString().withMessage('Store slug must be a string'),
+    body('seoTitle')
+        .optional()
+        .trim()
+        .isString()
+        .withMessage('SEO title must be a string')
+        .isLength({ max: 70 })
+        .withMessage('SEO title must not exceed 70 characters'),
+    body('seoDescription')
+        .optional()
+        .trim()
+        .isString()
+        .withMessage('SEO description must be a string')
+        .isLength({ max: 160 })
+        .withMessage('SEO description must not exceed 160 characters'),
 ];
 
 export const updateProductValidation = () => [
@@ -56,6 +70,20 @@ export const updateProductValidation = () => [
     body('stock').optional().isInt({ min: 0 }).withMessage('Stock must be a non-negative integer'),
     body('categoryId').optional().isString().withMessage('Category ID must be a string'),
     body('subCategoryId').optional().isString().withMessage('Sub-category ID must be a string'),
+    body('seoTitle')
+        .optional()
+        .trim()
+        .isString()
+        .withMessage('SEO title must be a string')
+        .isLength({ max: 70 })
+        .withMessage('SEO title must not exceed 70 characters'),
+    body('seoDescription')
+        .optional()
+        .trim()
+        .isString()
+        .withMessage('SEO description must be a string')
+        .isLength({ max: 160 })
+        .withMessage('SEO description must not exceed 160 characters'),
 ];
 
 export const productIdParamValidation = () => [

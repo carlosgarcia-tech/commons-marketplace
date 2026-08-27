@@ -20,6 +20,20 @@ export const createStoreValidation = () => [
         .optional()
         .isArray({ max: 5 })
         .withMessage('A store can have a maximum of 5 categories'),
+    body('seoTitle')
+        .optional()
+        .trim()
+        .isString()
+        .withMessage('SEO title must be a string')
+        .isLength({ max: 70 })
+        .withMessage('SEO title must not exceed 70 characters'),
+    body('seoDescription')
+        .optional()
+        .trim()
+        .isString()
+        .withMessage('SEO description must be a string')
+        .isLength({ max: 160 })
+        .withMessage('SEO description must not exceed 160 characters'),
 ];
 
 export const updateStoreValidation = () => [
@@ -37,6 +51,20 @@ export const updateStoreValidation = () => [
         .withMessage('Description must be a string')
         .isLength({ max: 2000 })
         .withMessage('Description must not exceed 2000 characters'),
+    body('seoTitle')
+        .optional()
+        .trim()
+        .isString()
+        .withMessage('SEO title must be a string')
+        .isLength({ max: 70 })
+        .withMessage('SEO title must not exceed 70 characters'),
+    body('seoDescription')
+        .optional()
+        .trim()
+        .isString()
+        .withMessage('SEO description must be a string')
+        .isLength({ max: 160 })
+        .withMessage('SEO description must not exceed 160 characters'),
 ];
 
 export const storeIdParamValidation = () => [
@@ -53,9 +81,5 @@ export const storeStatusValidation = () => [
         .withMessage('Status is required')
         .isIn(['Pending', 'Approved', 'Rejected', 'Suspended'])
         .withMessage('Status must be one of: Pending, Approved, Rejected, Suspended'),
-    body('reason')
-        .optional()
-        .trim()
-        .isString()
-        .withMessage('Reason must be a string'),
+    body('reason').optional().trim().isString().withMessage('Reason must be a string'),
 ];
