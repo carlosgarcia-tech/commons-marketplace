@@ -15,17 +15,18 @@ export const createReviewController = (dependencies) => {
          */
         createReview: async (req, res, next) => {
             try {
-                const { userId: authenticatedUserId } = req.user;
-                const { userId, commentary, score } = req.body;
-
-                if (authenticatedUserId !== userId) {
-                    return res.status(403).json({
-                        error: 'Not authorized to create review for this user',
-                    });
-                }
+                const { type, productId, storeId, commentary, score } = req.body;
+                const userId = req.user.id;
 
                 const createReviewUC = dependencies.resolve('createReviewUseCase');
-                const newReview = await createReviewUC({ userId, commentary, score });
+                const newReview = await createReviewUC({
+                    userId,
+                    type,
+                    productId,
+                    storeId,
+                    commentary,
+                    score,
+                });
 
                 res.status(201).json({
                     message: 'Review created successfully',
