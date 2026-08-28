@@ -1,3 +1,21 @@
+import supabase from '../../infrastructure/supabase/config/supabaseClient.js';
+
+/**
+ * Attempts to extract user from Authorization header without throwing if missing.
+ * Returns the Supabase user object or null if no valid token.
+ */
+async function optionalAuth(req) {
+    const token = req.headers?.authorization?.split(' ')[1];
+    if (!token) return null;
+    try {
+        const { data, error } = await supabase.auth.getUser(token);
+        if (error || !data?.user) return null;
+        return data.user;
+    } catch {
+        return null;
+    }
+}
+
 /**
  * Factory function to create a store controller.
  * @param {object} useCases - An object containing all store-related use cases.
@@ -36,13 +54,16 @@ export function createStoreController({
         async createStore(req, res, next) {
             try {
                 const userId = req.user.id;
-                const { storeName, description } = req.body;
+                const { storeName, description, categoryIds, seoTitle, seoDescription } = req.body;
                 const file = req.file;
 
                 const storeData = {
                     userId,
                     storeName,
                     description,
+                    categoryIds,
+                    seoTitle,
+                    seoDescription,
                 };
 
                 const newStore = await createStoreUseCase(storeData, file);
@@ -156,6 +177,27 @@ export function createStoreController({
 
                 if (!store) {
                     return res.status(404).json({ message: 'Store not found.' });
+                }
+
+                // Public access: only return Approved stores.
+                // Authenticated owner/admin can see all statuses.
+                if (store.status !== 'Approved') {
+                    const supabaseUser = await optionalAuth(req);
+                    if (supabaseUser) {
+                        const UserRepositoryImpl = (
+                            await import(
+                                '../../infrastructure/database/mongo/repositories/userRepository.js'
+                            )
+                        ).UserRepositoryImpl;
+                        const mongoUser = await UserRepositoryImpl.findById(supabaseUser.id);
+                        const isOwner = mongoUser && mongoUser._id === store.userId;
+                        const isAdmin = mongoUser && mongoUser.role === 'Admin';
+                        if (!isOwner && !isAdmin) {
+                            return res.status(404).json({ message: 'Store not found.' });
+                        }
+                    } else {
+                        return res.status(404).json({ message: 'Store not found.' });
+                    }
                 }
 
                 res.status(200).json(store);
