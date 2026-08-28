@@ -5,8 +5,8 @@ export const addToWishlistValidation = () => [
         .trim()
         .notEmpty()
         .withMessage('Product ID is required')
-        .isString()
-        .withMessage('Product ID must be a string'),
+        .isMongoId()
+        .withMessage('Product ID must be a valid ObjectId'),
 ];
 
 export const productIdParamValidation = () => [
@@ -14,6 +14,6 @@ export const productIdParamValidation = () => [
         .trim()
         .notEmpty()
         .withMessage('Product ID is required')
-        .isString()
-        .withMessage('Product ID must be a string'),
+        .isMongoId()
+        .withMessage('Product ID must be a valid ObjectId'),
 ];

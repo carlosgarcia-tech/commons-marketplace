@@ -25,10 +25,13 @@ describe('MarkMessagesAsReadUseCase', () => {
     });
 
     describe('execute', () => {
+        const validConvId = '507f1f77bcf86cd799439011';
+        const validUserId = '507f1f77bcf86cd799439012';
+        const otherUserId = '507f1f77bcf86cd799439013';
+
         it('should mark messages as read and notify other participant', async () => {
-            const conversationId = 'conv_123';
-            const userId = 'user_123';
-            const otherUserId = 'user_456';
+            const conversationId = validConvId;
+            const userId = validUserId;
             const updatedCount = 5;
 
             messageRepository.markAsRead.mockResolvedValue(updatedCount);
@@ -58,8 +61,8 @@ describe('MarkMessagesAsReadUseCase', () => {
         });
 
         it('should not publish message if no other participant found', async () => {
-            const conversationId = 'conv_123';
-            const userId = 'user_123';
+            const conversationId = validConvId;
+            const userId = validUserId;
             const updatedCount = 3;
 
             messageRepository.markAsRead.mockResolvedValue(updatedCount);
@@ -78,9 +81,9 @@ describe('MarkMessagesAsReadUseCase', () => {
         });
 
         it('should handle when no messages are updated', async () => {
-            const conversationId = 'conv_123';
-            const userId = 'user_123';
-            const otherUserId = 'user_456';
+            const conversationId = validConvId;
+            const userId = validUserId;
+            const otherUserId = '507f1f77bcf86cd799439014';
 
             messageRepository.markAsRead.mockResolvedValue(0);
             conversationRepository.resetUnreadCount.mockResolvedValue();
@@ -99,8 +102,8 @@ describe('MarkMessagesAsReadUseCase', () => {
         });
 
         it('should throw an error if markAsRead fails', async () => {
-            const conversationId = 'conv_123';
-            const userId = 'user_123';
+            const conversationId = validConvId;
+            const userId = validUserId;
             const error = new Error('Database error');
 
             messageRepository.markAsRead.mockRejectedValue(error);
@@ -109,8 +112,8 @@ describe('MarkMessagesAsReadUseCase', () => {
         });
 
         it('should throw an error if resetUnreadCount fails', async () => {
-            const conversationId = 'conv_123';
-            const userId = 'user_123';
+            const conversationId = validConvId;
+            const userId = validUserId;
             const error = new Error('Reset failed');
 
             messageRepository.markAsRead.mockResolvedValue(5);
@@ -120,8 +123,8 @@ describe('MarkMessagesAsReadUseCase', () => {
         });
 
         it('should throw an error if findById fails', async () => {
-            const conversationId = 'conv_123';
-            const userId = 'user_123';
+            const conversationId = validConvId;
+            const userId = validUserId;
             const error = new Error('Conversation not found');
 
             messageRepository.markAsRead.mockResolvedValue(5);
