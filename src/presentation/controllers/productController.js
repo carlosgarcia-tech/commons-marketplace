@@ -1,3 +1,21 @@
+import supabase from '../../infrastructure/supabase/config/supabaseClient.js';
+
+/**
+ * Attempts to extract user from Authorization header without throwing if missing.
+ * Returns the Supabase user object or null if no valid token.
+ */
+async function optionalAuth(req) {
+    const token = req.headers?.authorization?.split(' ')[1];
+    if (!token) return null;
+    try {
+        const { data, error } = await supabase.auth.getUser(token);
+        if (error || !data?.user) return null;
+        return data.user;
+    } catch {
+        return null;
+    }
+}
+
 /**
  * Factory function to create a product controller.
  * This controller handles HTTP requests for product operations including image uploads.
@@ -9,6 +27,7 @@
  * @param {Function} dependencies.deleteProductUseCase - Use case for deleting products
  * @param {Function} dependencies.getStoreProductsUseCase - Use case for getting products by store
  * @param {Function} dependencies.getRelatedProductsUseCase - Use case for getting related products
+ * @param {Function} dependencies.searchProductsUseCase - Use case for searching products
  * @returns {object} Product controller methods
  */
 export function createProductController({
@@ -19,6 +38,7 @@ export function createProductController({
     deleteProductUseCase,
     getStoreProductsUseCase,
     getRelatedProductsUseCase,
+    searchProductsUseCase,
 }) {
     return {
         /**
@@ -33,8 +53,16 @@ export function createProductController({
         async createProduct(req, res, next) {
             try {
                 const sellerId = req.user.id;
-                const { name, description, price, stock, categoryId, subCategoryId, storeId, storeSlug } =
-                    req.body;
+                const {
+                    name,
+                    description,
+                    price,
+                    stock,
+                    categoryId,
+                    subCategoryId,
+                    storeId,
+                    storeSlug,
+                } = req.body;
 
                 const mainImageFile = req.files?.mainImage?.[0];
                 const additionalImagesFiles = req.files?.additionalImages || [];
@@ -129,7 +157,53 @@ export function createProductController({
                     filters.subCategoryId = subCategoryId;
                 }
                 if (status) {
-                    filters.status = status;
+                    // Public access: only allow Active status
+                    // Authenticated admins/sellers can filter by any status
+                    if (status !== 'Active') {
+                        const supabaseUser = await optionalAuth(req);
+                        if (supabaseUser) {
+                            const UserRepositoryImpl = (
+                                await import(
+                                    '../../infrastructure/database/mongo/repositories/userRepository.js'
+                                )
+                            ).UserRepositoryImpl;
+                            const mongoUser = await UserRepositoryImpl.findById(supabaseUser.id);
+                            const isAdmin = mongoUser && mongoUser.role === 'Admin';
+                            // Sellers can filter their own products by any status
+                            const isSeller =
+                                mongoUser &&
+                                (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
+                            if (!isAdmin && !isSeller) {
+                                filters.status = 'Active';
+                            } else {
+                                filters.status = status;
+                            }
+                        } else {
+                            filters.status = 'Active';
+                        }
+                    } else {
+                        filters.status = status;
+                    }
+                } else {
+                    // Default to Active for public access
+                    const supabaseUser = await optionalAuth(req);
+                    if (supabaseUser) {
+                        const UserRepositoryImpl = (
+                            await import(
+                                '../../infrastructure/database/mongo/repositories/userRepository.js'
+                            )
+                        ).UserRepositoryImpl;
+                        const mongoUser = await UserRepositoryImpl.findById(supabaseUser.id);
+                        const isAdmin = mongoUser && mongoUser.role === 'Admin';
+                        const isSeller =
+                            mongoUser &&
+                            (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
+                        if (!isAdmin && !isSeller) {
+                            filters.status = 'Active';
+                        }
+                    } else {
+                        filters.status = 'Active';
+                    }
                 }
 
                 Object.assign(filters, otherFilters);
@@ -197,6 +271,30 @@ export function createProductController({
                 const product = await getProductByIdUseCase(idOrSlug);
                 if (!product) {
                     return res.status(404).json({ message: 'Product not found' });
+                }
+
+                // Public access: only return Active products.
+                // Authenticated owner/admin can see all statuses.
+                // Treat undefined/missing status as Active (model default).
+                const productStatus = product.status || 'Active';
+                if (productStatus !== 'Active') {
+                    const supabaseUser = await optionalAuth(req);
+                    if (supabaseUser) {
+                        // Load the MongoDB profile to check ownership/role
+                        const UserRepositoryImpl = (
+                            await import(
+                                '../../infrastructure/database/mongo/repositories/userRepository.js'
+                            )
+                        ).UserRepositoryImpl;
+                        const mongoUser = await UserRepositoryImpl.findById(supabaseUser.id);
+                        const isOwner = mongoUser && mongoUser._id === product.sellerId;
+                        const isAdmin = mongoUser && mongoUser.role === 'Admin';
+                        if (!isOwner && !isAdmin) {
+                            return res.status(404).json({ message: 'Product not found' });
+                        }
+                    } else {
+                        return res.status(404).json({ message: 'Product not found' });
+                    }
                 }
 
                 res.status(200).json(product);
@@ -280,6 +378,45 @@ export function createProductController({
                 const { id } = req.params;
                 const { limit } = req.query;
                 const limitNum = limit ? parseInt(limit) : 10;
+
+                // First check if the base product exists and is Active (or user has access)
+                const baseProduct = await getProductByIdUseCase(id);
+                if (!baseProduct) {
+                    return res.status(404).json({ message: 'Product not found' });
+                }
+
+                // Public access: only return related for Active products
+                if (baseProduct.status !== 'Active') {
+                    const supabaseUser = await optionalAuth(req);
+                    if (supabaseUser) {
+                        const UserRepositoryImpl = (
+                            await import(
+                                '../../infrastructure/database/mongo/repositories/userRepository.js'
+                            )
+                        ).UserRepositoryImpl;
+                        const mongoUser = await UserRepositoryImpl.findById(supabaseUser.id);
+                        const isOwner = mongoUser && mongoUser._id === baseProduct.sellerId;
+                        const isAdmin = mongoUser && mongoUser.role === 'Admin';
+                        if (!isOwner && !isAdmin) {
+                            return res
+                                .status(200)
+                                .json({
+                                    productId: id,
+                                    categoryId: baseProduct.categoryId,
+                                    products: [],
+                                });
+                        }
+                    } else {
+                        return res
+                            .status(200)
+                            .json({
+                                productId: id,
+                                categoryId: baseProduct.categoryId,
+                                products: [],
+                            });
+                    }
+                }
+
                 const related = await getRelatedProductsUseCase(id, limitNum);
                 res.status(200).json(related);
             } catch (error) {
@@ -292,23 +429,33 @@ export function createProductController({
 
         async searchProducts(req, res, next) {
             try {
-                const { page: pageStr, limit: limitStr, sortBy, order } = req.query;
+                const {
+                    q,
+                    page: pageStr,
+                    limit: limitStr,
+                    categoryId,
+                    subCategoryId,
+                    sortBy,
+                    order,
+                } = req.query;
                 const page = parseInt(pageStr, 10) || 1;
                 const limit = parseInt(limitStr, 10) || 10;
+
                 const sortOptions = {};
                 if (sortBy) {
                     sortOptions[sortBy] = order === 'desc' ? -1 : 1;
                 }
-                const { categoryId, subCategoryId, ...otherFilters } = req.query;
+
                 const filters = {};
                 if (categoryId) filters.categoryId = categoryId;
                 if (subCategoryId) filters.subCategoryId = subCategoryId;
-                Object.assign(filters, otherFilters);
-                delete filters.page;
-                delete filters.limit;
-                delete filters.sortBy;
-                delete filters.order;
-                const results = await getAllProductsUseCase(filters, { page, limit }, sortOptions);
+
+                const results = await searchProductsUseCase(
+                    q,
+                    filters,
+                    { page, limit },
+                    sortOptions,
+                );
                 res.status(200).json(results);
             } catch (error) {
                 next(error);
