@@ -177,7 +177,7 @@ describe('UpdateStoreUseCase Tests', () => {
         storeRepository.findById.mockResolvedValue(existingStore);
 
         await expect(useCase(storeId, updateData)).rejects.toThrow(
-            'At least one field (storeName, description, logo) must be provided for an update.',
+            'At least one field (storeName, description, logo, categoryIds, seoTitle, seoDescription) must be provided for an update.',
         );
     });
 

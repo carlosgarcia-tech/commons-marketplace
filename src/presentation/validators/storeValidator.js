@@ -51,6 +51,10 @@ export const updateStoreValidation = () => [
         .withMessage('Description must be a string')
         .isLength({ max: 2000 })
         .withMessage('Description must not exceed 2000 characters'),
+    body('categoryIds')
+        .optional()
+        .isArray({ max: 5 })
+        .withMessage('A store can have a maximum of 5 categories'),
     body('seoTitle')
         .optional()
         .trim()

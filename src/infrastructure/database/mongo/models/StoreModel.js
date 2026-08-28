@@ -49,14 +49,21 @@ const storeSchema = new mongoose.Schema(
             enum: ['Pending', 'Approved', 'Rejected', 'Suspended'],
             default: 'Pending',
         },
+        statusReason: {
+            type: String,
+            required: false,
+            maxlength: 500,
+        },
         categoryIds: {
-            type: [{
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Category',
-            }],
+            type: [
+                {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: 'Category',
+                },
+            ],
             default: [],
             validate: {
-                validator: function(v) {
+                validator: function (v) {
                     return v.length <= 5;
                 },
                 message: 'A store can have a maximum of 5 categories',
