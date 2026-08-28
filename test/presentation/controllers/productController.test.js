@@ -57,7 +57,11 @@ describe('ProductController Tests', () => {
                 mainImage: [{ filename: 'main.jpg' }],
                 additionalImages: [{ filename: 'img1.jpg' }],
             };
-            createProductUseCase.mockResolvedValue({ isOk: true, isErr: false, value: mockProduct });
+            createProductUseCase.mockResolvedValue({
+                isOk: true,
+                isErr: false,
+                value: mockProduct,
+            });
 
             await productController.createProduct(req, res, next);
 
@@ -152,7 +156,11 @@ describe('ProductController Tests', () => {
 
             await productController.getAllProducts(req, res, next);
 
-            expect(getAllProductsUseCase).toHaveBeenCalledWith({}, { page: 1, limit: 10 }, {});
+            expect(getAllProductsUseCase).toHaveBeenCalledWith(
+                { status: 'Active' },
+                { page: 1, limit: 10 },
+                {},
+            );
             expect(res.status).toHaveBeenCalledWith(200);
             expect(res.json).toHaveBeenCalledWith(mockPaginatedResult);
         });
@@ -181,7 +189,12 @@ describe('ProductController Tests', () => {
             await productController.getAllProducts(req, res, next);
 
             expect(getAllProductsUseCase).toHaveBeenCalledWith(
-                { storeId: 'store123', categoryId: 'cat456', subCategoryId: 'sub789' },
+                {
+                    storeId: 'store123',
+                    categoryId: 'cat456',
+                    subCategoryId: 'sub789',
+                    status: 'Active',
+                },
                 { page: 1, limit: 10 },
                 {},
             );
@@ -210,7 +223,7 @@ describe('ProductController Tests', () => {
             await productController.getAllProducts(req, res, next);
 
             expect(getAllProductsUseCase).toHaveBeenCalledWith(
-                {},
+                { status: 'Active' },
                 { page: 1, limit: 10 },
                 { price: -1 },
             );
@@ -239,7 +252,7 @@ describe('ProductController Tests', () => {
             await productController.getAllProducts(req, res, next);
 
             expect(getAllProductsUseCase).toHaveBeenCalledWith(
-                {},
+                { status: 'Active' },
                 { page: 1, limit: 10 },
                 { name: 1 },
             );
@@ -550,7 +563,11 @@ describe('ProductController Tests', () => {
     describe('deleteProduct', () => {
         it('should return 204 on successful deletion', async () => {
             req.params.id = '1';
-            deleteProductUseCase.mockResolvedValue({ isOk: true, isErr: false, value: { id: '1' } });
+            deleteProductUseCase.mockResolvedValue({
+                isOk: true,
+                isErr: false,
+                value: { id: '1' },
+            });
 
             await productController.deleteProduct(req, res, next);
 

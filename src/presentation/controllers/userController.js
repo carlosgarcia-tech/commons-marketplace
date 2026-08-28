@@ -11,7 +11,19 @@ export const createUserController = (
 ) => ({
     createUser: async (req, res, next) => {
         try {
-            const dto = CreateUserDTO.from(req.body);
+            // The MongoDB profile _id must be tied to the authenticated
+            // Supabase subject. Deriving it here (instead of trusting the
+            // client body) prevents an attacker from provisioning a profile
+            // under someone else's ID to bypass ownership checks.
+            const { name, lastName, phoneNumber, address, profilePicUrl } = req.body;
+            const dto = CreateUserDTO.from({
+                _id: req.user.id,
+                name,
+                lastName,
+                phoneNumber,
+                address,
+                profilePicUrl,
+            });
             const result = await createUserUC(dto);
             res.status(201).json(result);
         } catch (error) {
@@ -41,14 +53,14 @@ export const createUserController = (
         try {
             const { name, lastName, phoneNumber, address } = req.body;
             const file = req.file;
-            
+
             const updateData = {
                 name,
                 lastName,
                 phoneNumber,
                 address,
             };
-            
+
             const result = await updateUserUC(req.params.id, updateData, file);
             res.status(200).json(result);
         } catch (error) {

@@ -8,7 +8,45 @@ import { log } from '../../infrastructure/logger/logger.js';
  * @param {Function} next - Express next function
  */
 export const errorHandler = (err, req, res, next) => {
-    const statusCode = err.statusCode || err.status || 500;
+    let statusCode = err.statusCode || err.status || 500;
+
+    // Map common domain error messages to appropriate HTTP status codes
+    // when the error doesn't already have a statusCode (bare new Error())
+    if (statusCode === 500 && err.message) {
+        const msg = err.message;
+        if (msg.includes('not found') || msg.includes('Not found')) {
+            statusCode = 404;
+        } else if (
+            msg.includes('already reviewed') ||
+            msg.includes('already exists') ||
+            msg.includes('duplicate')
+        ) {
+            statusCode = 409;
+        } else if (
+            msg.includes('maximum limit') ||
+            msg.includes('maximum of') ||
+            msg.includes('exceed')
+        ) {
+            statusCode = 400;
+        } else if (
+            msg.includes('not authorized') ||
+            msg.includes('not allowed') ||
+            msg.includes('forbidden') ||
+            msg.includes('insufficient')
+        ) {
+            statusCode = 403;
+        } else if (
+            msg.includes('required') ||
+            msg.includes('invalid') ||
+            msg.includes('must be') ||
+            msg.includes('must not') ||
+            msg.includes('is required')
+        ) {
+            statusCode = 400;
+        } else if (msg.includes('Cannot delete') || msg.includes('has subcategories')) {
+            statusCode = 409;
+        }
+    }
 
     // Unexpected failures may carry internal details (driver messages,
     // connection strings, query shapes). Respond with a generic message

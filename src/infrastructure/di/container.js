@@ -46,6 +46,7 @@ import {
     deleteProductUseCase,
     getStoreProductsUseCase,
     getRelatedProductsUseCase,
+    searchProductsUseCase,
 } from '../../application/use-cases/product/index.js';
 // Store
 import {
@@ -165,6 +166,7 @@ export const createContainer = () => {
     const deleteProductUC = deleteProductUseCase(productRepo, storeRepo);
     const getStoreProductsUC = getStoreProductsUseCase(productRepo, storeRepo);
     const getRelatedProductsUC = getRelatedProductsUseCase(productRepo);
+    const searchProductsUC = searchProductsUseCase(productRepo);
 
     // Store
     const createStoreUC = createStoreUseCase(storeRepo, userRepo, categoryRepo, fileService);
@@ -285,6 +287,7 @@ export const createContainer = () => {
         deleteProductUseCase: deleteProductUC,
         getStoreProductsUseCase: getStoreProductsUC,
         getRelatedProductsUseCase: getRelatedProductsUC,
+        searchProductsUseCase: searchProductsUC,
     });
 
     const storeController = createStoreController({

@@ -81,7 +81,14 @@ describe('UserController', () => {
 
             await controller.createUser(req, res, next);
 
-            expect(CreateUserDTO.from).toHaveBeenCalledWith(userData);
+            expect(CreateUserDTO.from).toHaveBeenCalledWith({
+                _id: 'user123',
+                name: 'John Doe',
+                lastName: undefined,
+                phoneNumber: undefined,
+                address: undefined,
+                profilePicUrl: undefined,
+            });
             expect(createUserUC).toHaveBeenCalledWith(userData);
             expect(res.status).toHaveBeenCalledWith(201);
             expect(res.json).toHaveBeenCalledWith(createdUser);
@@ -98,7 +105,14 @@ describe('UserController', () => {
 
             await controller.createUser(req, res, next);
 
-            expect(CreateUserDTO.from).toHaveBeenCalledWith(userData);
+            expect(CreateUserDTO.from).toHaveBeenCalledWith({
+                _id: 'user123',
+                name: 'John Doe',
+                lastName: undefined,
+                phoneNumber: undefined,
+                address: undefined,
+                profilePicUrl: undefined,
+            });
             expect(createUserUC).toHaveBeenCalledWith(userData);
             expect(next).toHaveBeenCalledWith(error);
             expect(res.status).not.toHaveBeenCalled();
@@ -115,7 +129,14 @@ describe('UserController', () => {
 
             await controller.createUser(req, res, next);
 
-            expect(CreateUserDTO.from).toHaveBeenCalledWith(invalidUserData);
+            expect(CreateUserDTO.from).toHaveBeenCalledWith({
+                _id: 'user123',
+                name: 'John',
+                lastName: undefined,
+                phoneNumber: undefined,
+                address: undefined,
+                profilePicUrl: undefined,
+            });
             expect(createUserUC).not.toHaveBeenCalled();
             expect(next).toHaveBeenCalledWith(expect.any(Error));
             expect(next.mock.calls[0][0].message).toBe('Invalid user data');
@@ -218,7 +239,12 @@ describe('UserController', () => {
     describe('updateUserById', () => {
         it('should update user successfully and return updated user', async () => {
             const userId = 'user123';
-            const updateData = { name: 'Updated Name', lastName: 'Doe', phoneNumber: '1234567890', address: '123 Main St' };
+            const updateData = {
+                name: 'Updated Name',
+                lastName: 'Doe',
+                phoneNumber: '1234567890',
+                address: '123 Main St',
+            };
             const updatedUser = { id: userId, ...updateData, updatedAt: new Date() };
 
             req.params.id = userId;

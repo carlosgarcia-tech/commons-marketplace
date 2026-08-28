@@ -38,6 +38,7 @@ describe('UpdateStoreStatusUseCase Tests', () => {
         expect(storeRepository.updateStatus).toHaveBeenCalledWith(
             storeId,
             createUpdateStoreStatusDTO(statusData).status,
+            createUpdateStoreStatusDTO(statusData).reason,
         );
         expect(result).toEqual(createStoreResponseDTO(updatedStore));
     });

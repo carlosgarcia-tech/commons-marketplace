@@ -16,7 +16,11 @@ export const updateStoreStatusUseCase = (storeRepository) => async (storeId, sta
     }
 
     const updateStoreStatusDTO = createUpdateStoreStatusDTO(statusData);
-    const updatedStore = await storeRepository.updateStatus(storeId, updateStoreStatusDTO.status);
+    const updatedStore = await storeRepository.updateStatus(
+        storeId,
+        updateStoreStatusDTO.status,
+        updateStoreStatusDTO.reason,
+    );
 
     return createStoreResponseDTO(updatedStore);
 };

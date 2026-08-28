@@ -63,8 +63,12 @@ export const StoreRepositoryImpl = {
         return await StoreModel.find({ status }).sort({ createdAt: -1 }).lean();
     },
 
-    async updateStatus(storeId, status) {
-        return await StoreModel.findByIdAndUpdate(storeId, { status }, { new: true }).lean();
+    async updateStatus(storeId, status, reason = null) {
+        const updateData = { status };
+        if (reason) {
+            updateData.statusReason = reason;
+        }
+        return await StoreModel.findByIdAndUpdate(storeId, updateData, { new: true }).lean();
     },
 
     async countByStatus(status) {
@@ -81,14 +85,16 @@ export const StoreRepositoryImpl = {
     async findAllWithCategory(categoryId) {
         return await StoreModel.find({
             categoryIds: categoryId,
-        }).sort({ createdAt: -1 }).lean();
+        })
+            .sort({ createdAt: -1 })
+            .lean();
     },
 
     async incrementProductCount(storeId) {
         return await StoreModel.findByIdAndUpdate(
             storeId,
             { $inc: { productCount: 1 } },
-            { new: true }
+            { new: true },
         ).lean();
     },
 
@@ -96,7 +102,7 @@ export const StoreRepositoryImpl = {
         return await StoreModel.findByIdAndUpdate(
             storeId,
             { $inc: { productCount: -1 } },
-            { new: true }
+            { new: true },
         ).lean();
     },
 };

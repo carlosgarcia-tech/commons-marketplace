@@ -105,7 +105,7 @@ describe('UpdateStoreDTO Tests', () => {
         const data = {};
 
         expect(() => createUpdateStoreDTO(data)).toThrow(
-            'At least one field (storeName, description, logo) must be provided for an update.',
+            'At least one field (storeName, description, logo, categoryIds, seoTitle, seoDescription) must be provided for an update.',
         );
     });
 
@@ -117,7 +117,7 @@ describe('UpdateStoreDTO Tests', () => {
         };
 
         expect(() => createUpdateStoreDTO(data)).toThrow(
-            'At least one field (storeName, description, logo) must be provided for an update.',
+            'At least one field (storeName, description, logo, categoryIds, seoTitle, seoDescription) must be provided for an update.',
         );
     });
 

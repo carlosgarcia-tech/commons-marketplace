@@ -31,6 +31,7 @@ export const createUserRoutes = (userController) => {
         UserValidator.userIdParamValidation(),
         validate,
         authenticate,
+        canModifyUser,
         userController.getUserById,
     );
 
