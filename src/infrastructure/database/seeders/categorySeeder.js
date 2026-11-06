@@ -89,18 +89,20 @@ export const seedCategories = async () => {
         const mainCategories = await CategoryModel.insertMany(categories);
         log.info(`Seeded ${mainCategories.length} main categories`);
 
-        const electronics = mainCategories.find(c => c.slug === 'electronics');
-        const clothing = mainCategories.find(c => c.slug === 'clothing');
+        const electronics = mainCategories.find((c) => c.slug === 'electronics');
+        const clothing = mainCategories.find((c) => c.slug === 'clothing');
 
-        const subCategoriesWithParents = subCategories.map(sub => {
-            if (sub.slug === 'smartphones' || sub.slug === 'laptops') {
-                return { ...sub, parent: electronics?._id };
-            }
-            if (sub.slug === 'mens-clothing' || sub.slug === 'womens-clothing') {
-                return { ...sub, parent: clothing?._id };
-            }
-            return sub;
-        }).filter(sub => sub.parent);
+        const subCategoriesWithParents = subCategories
+            .map((sub) => {
+                if (sub.slug === 'smartphones' || sub.slug === 'laptops') {
+                    return { ...sub, parent: electronics?._id };
+                }
+                if (sub.slug === 'mens-clothing' || sub.slug === 'womens-clothing') {
+                    return { ...sub, parent: clothing?._id };
+                }
+                return sub;
+            })
+            .filter((sub) => sub.parent);
 
         if (subCategoriesWithParents.length > 0) {
             await CategoryModel.insertMany(subCategoriesWithParents);

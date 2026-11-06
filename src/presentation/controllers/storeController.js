@@ -3,6 +3,7 @@ import supabase from '../../infrastructure/supabase/config/supabaseClient.js';
 /**
  * Attempts to extract user from Authorization header without throwing if missing.
  * Returns the Supabase user object or null if no valid token.
+ * @param req
  */
 async function optionalAuth(req) {
     const token = req.headers?.authorization?.split(' ')[1];

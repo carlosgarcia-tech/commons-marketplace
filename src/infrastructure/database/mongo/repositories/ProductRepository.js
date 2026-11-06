@@ -29,12 +29,7 @@ export const ProductRepositoryImpl = {
     },
 
     async findByStoreId(storeId, options = { page: 1, limit: 10 }, sort = {}) {
-        return paginateQuery(
-            ProductModel,
-            { storeId, status: 'Active' },
-            options,
-            sort,
-        );
+        return paginateQuery(ProductModel, { storeId, status: 'Active' }, options, sort);
     },
 
     async findAllByStoreId(storeId) {
@@ -42,21 +37,11 @@ export const ProductRepositoryImpl = {
     },
 
     async findByCategoryId(categoryId, options = { page: 1, limit: 10 }, sort = {}) {
-        return paginateQuery(
-            ProductModel,
-            { categoryId, status: 'Active' },
-            options,
-            sort,
-        );
+        return paginateQuery(ProductModel, { categoryId, status: 'Active' }, options, sort);
     },
 
     async findBySubCategoryId(subCategoryId, options = { page: 1, limit: 10 }, sort = {}) {
-        return paginateQuery(
-            ProductModel,
-            { subCategoryId, status: 'Active' },
-            options,
-            sort,
-        );
+        return paginateQuery(ProductModel, { subCategoryId, status: 'Active' }, options, sort);
     },
 
     async findByCategoryAndSubCategory(
@@ -94,10 +79,7 @@ export const ProductRepositoryImpl = {
     },
 
     async softDeleteManyByStoreId(storeId) {
-        return await ProductModel.updateMany(
-            { storeId },
-            { $set: { status: 'Deleted' } },
-        );
+        return await ProductModel.updateMany({ storeId }, { $set: { status: 'Deleted' } });
     },
 
     async count(filters = {}) {

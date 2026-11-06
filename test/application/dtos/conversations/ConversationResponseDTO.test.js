@@ -17,7 +17,13 @@ describe('ConversationResponseDTO', () => {
     };
 
     const participantsData = {
-        user1: { name: 'John', lastName: 'Doe', email: 'john@test.com', profilePicUrl: 'pic.jpg', isApprovedSeller: true },
+        user1: {
+            name: 'John',
+            lastName: 'Doe',
+            email: 'john@test.com',
+            profilePicUrl: 'pic.jpg',
+            isApprovedSeller: true,
+        },
         user2: { name: 'Jane', lastName: 'Smith', email: 'jane@test.com' },
     };
 
@@ -41,7 +47,9 @@ describe('ConversationResponseDTO', () => {
         const conv = {
             ...baseConversation,
             unreadCount: new Map([['user1', 3]]),
-            get: function(key) { return this.get(key); },
+            get: function (key) {
+                return this.get(key);
+            },
         };
         const result = conversationResponseDTO(conv, 'user1', {});
         expect(result.unreadCount).toBe(3);

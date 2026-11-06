@@ -3,6 +3,7 @@ import supabase from '../../infrastructure/supabase/config/supabaseClient.js';
 /**
  * Attempts to extract user from Authorization header without throwing if missing.
  * Returns the Supabase user object or null if no valid token.
+ * @param req
  */
 async function optionalAuth(req) {
     const token = req.headers?.authorization?.split(' ')[1];
@@ -156,11 +157,17 @@ export function createProductController({
                     if (status !== 'Active') {
                         const supabaseUser = await optionalAuth(req);
                         if (supabaseUser) {
-                            const UserRepositoryImpl = (await import('../../infrastructure/database/mongo/repositories/userRepository.js')).UserRepositoryImpl;
+                            const UserRepositoryImpl = (
+                                await import(
+                                    '../../infrastructure/database/mongo/repositories/userRepository.js'
+                                )
+                            ).UserRepositoryImpl;
                             const mongoUser = await UserRepositoryImpl.findById(supabaseUser.id);
                             const isAdmin = mongoUser && mongoUser.role === 'Admin';
                             // Sellers can filter their own products by any status
-                            const isSeller = mongoUser && (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
+                            const isSeller =
+                                mongoUser &&
+                                (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
                             if (!isAdmin && !isSeller) {
                                 filters.status = 'Active';
                             } else {
@@ -176,10 +183,16 @@ export function createProductController({
                     // Default to Active for public access
                     const supabaseUser = await optionalAuth(req);
                     if (supabaseUser) {
-                        const UserRepositoryImpl = (await import('../../infrastructure/database/mongo/repositories/userRepository.js')).UserRepositoryImpl;
+                        const UserRepositoryImpl = (
+                            await import(
+                                '../../infrastructure/database/mongo/repositories/userRepository.js'
+                            )
+                        ).UserRepositoryImpl;
                         const mongoUser = await UserRepositoryImpl.findById(supabaseUser.id);
                         const isAdmin = mongoUser && mongoUser.role === 'Admin';
-                        const isSeller = mongoUser && (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
+                        const isSeller =
+                            mongoUser &&
+                            (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
                         if (!isAdmin && !isSeller) {
                             filters.status = 'Active';
                         }
@@ -380,22 +393,18 @@ export function createProductController({
                         const isOwner = mongoUser && mongoUser._id === baseProduct.sellerId;
                         const isAdmin = mongoUser && mongoUser.role === 'Admin';
                         if (!isOwner && !isAdmin) {
-                            return res
-                                .status(200)
-                                .json({
-                                    productId: id,
-                                    categoryId: baseProduct.categoryId,
-                                    products: [],
-                                });
-                        }
-                    } else {
-                        return res
-                            .status(200)
-                            .json({
+                            return res.status(200).json({
                                 productId: id,
                                 categoryId: baseProduct.categoryId,
                                 products: [],
                             });
+                        }
+                    } else {
+                        return res.status(200).json({
+                            productId: id,
+                            categoryId: baseProduct.categoryId,
+                            products: [],
+                        });
                     }
                 }
 

@@ -5,11 +5,11 @@ export const createAuthController = (registerUC, loginUC, logoutUC, refreshToken
         try {
             const authDTO = AuthDTO.registerRequest(req.body);
             const response = await registerUC(authDTO);
-            
+
             if (response.needsEmailConfirmation) {
                 return res.status(200).json(response);
             }
-            
+
             res.status(201).json(response);
         } catch (error) {
             next(error);

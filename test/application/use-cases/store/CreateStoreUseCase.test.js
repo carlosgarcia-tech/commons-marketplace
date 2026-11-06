@@ -1,7 +1,5 @@
 import { createStoreUseCase } from '../../../../src/application/use-cases/store/CreateStoreUseCase.js';
-import {
-    createStoreResponseDTO,
-} from '../../../../src/application/dtos/stores/index.js';
+import { createStoreResponseDTO } from '../../../../src/application/dtos/stores/index.js';
 
 describe('CreateStoreUseCase Tests', () => {
     let storeRepository;
@@ -24,7 +22,12 @@ describe('CreateStoreUseCase Tests', () => {
         fileService = {
             uploadImage: jest.fn(),
         };
-        useCase = createStoreUseCase(storeRepository, userRepository, categoryRepository, fileService);
+        useCase = createStoreUseCase(
+            storeRepository,
+            userRepository,
+            categoryRepository,
+            fileService,
+        );
     });
 
     it('should create a store successfully without logo', async () => {

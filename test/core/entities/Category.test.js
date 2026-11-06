@@ -57,7 +57,10 @@ describe('Category Entity', () => {
         it('should handle complex subCategories', () => {
             const category = createCategory({
                 name: 'Electronics',
-                subCategories: [{ id: '1', name: 'Phones' }, { id: '2', name: 'Tablets' }],
+                subCategories: [
+                    { id: '1', name: 'Phones' },
+                    { id: '2', name: 'Tablets' },
+                ],
             });
             expect(category.subCategories).toHaveLength(2);
         });

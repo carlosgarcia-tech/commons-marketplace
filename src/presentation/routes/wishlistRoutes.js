@@ -13,12 +13,8 @@ export const createWishlistRoutes = (wishlistController) => {
         wishlistController.getWishlist(req, res, next),
     );
 
-    router.post(
-        '/',
-        authenticate,
-        addToWishlistValidation(),
-        validate,
-        (req, res, next) => wishlistController.addToWishlist(req, res, next),
+    router.post('/', authenticate, addToWishlistValidation(), validate, (req, res, next) =>
+        wishlistController.addToWishlist(req, res, next),
     );
 
     router.delete(

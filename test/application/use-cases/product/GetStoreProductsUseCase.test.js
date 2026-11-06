@@ -62,7 +62,7 @@ describe('GetStoreProductsUseCase', () => {
         expect(mockProductRepository.findByStoreId).toHaveBeenCalledWith(
             'store123',
             { page: 2, limit: 10 },
-            {}
+            {},
         );
     });
 

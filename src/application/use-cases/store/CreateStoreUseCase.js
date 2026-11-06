@@ -24,7 +24,10 @@ export const createStoreUseCase =
         }
 
         if (user.role !== 'seller' && user.role !== 'admin') {
-            log.warn('User is not a seller or admin', { userId: storeData.userId, role: user.role });
+            log.warn('User is not a seller or admin', {
+                userId: storeData.userId,
+                role: user.role,
+            });
             throw forbiddenException('You must be an approved seller to create a store.');
         }
 

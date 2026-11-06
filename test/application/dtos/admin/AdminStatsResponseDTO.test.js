@@ -1,4 +1,7 @@
-import { createAdminStatsResponseDTO, default as createAdminStatsResponseDTODefault } from '../../../../src/application/dtos/admin/AdminStatsResponseDTO.js';
+import {
+    createAdminStatsResponseDTO,
+    default as createAdminStatsResponseDTODefault,
+} from '../../../../src/application/dtos/admin/AdminStatsResponseDTO.js';
 
 jest.mock('../../../../src/infrastructure/logger/logger.js', () => ({
     log: { info: jest.fn(), debug: jest.fn(), error: jest.fn(), warn: jest.fn() },

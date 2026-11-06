@@ -255,23 +255,44 @@ describe('StoreController', () => {
         });
 
         it('should pass categoryId and custom pagination from query', async () => {
-            getAllStoresUseCase.mockResolvedValue({ data: [], total: 0, page: 2, limit: 5, totalPages: 0 });
+            getAllStoresUseCase.mockResolvedValue({
+                data: [],
+                total: 0,
+                page: 2,
+                limit: 5,
+                totalPages: 0,
+            });
             req.query = { categoryId: 'cat123', page: '2', limit: '5' };
 
             await controller.getAllStores(req, res, next);
 
-            expect(getAllStoresUseCase).toHaveBeenCalledWith({ categoryId: 'cat123' }, { page: 2, limit: 5 });
+            expect(getAllStoresUseCase).toHaveBeenCalledWith(
+                { categoryId: 'cat123' },
+                { page: 2, limit: 5 },
+            );
         });
 
         it('should return empty data when no approved stores exist', async () => {
-            getAllStoresUseCase.mockResolvedValue({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+            getAllStoresUseCase.mockResolvedValue({
+                data: [],
+                total: 0,
+                page: 1,
+                limit: 10,
+                totalPages: 0,
+            });
             req.query = {};
 
             await controller.getAllStores(req, res, next);
 
             expect(getAllStoresUseCase).toHaveBeenCalledWith({}, { page: 1, limit: 10 });
             expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
+            expect(res.json).toHaveBeenCalledWith({
+                data: [],
+                total: 0,
+                page: 1,
+                limit: 10,
+                totalPages: 0,
+            });
         });
 
         it('should handle errors during stores retrieval and call next', async () => {
@@ -507,7 +528,15 @@ describe('StoreController', () => {
         it('should handle missing params.id for deleteStore', async () => {
             req.params = {};
 
-            deleteStoreUseCase.mockResolvedValue({ isErr: true, isOk: false, error: { message: 'Store ID is required', statusCode: 400, code: 'VALIDATION_ERROR' } });
+            deleteStoreUseCase.mockResolvedValue({
+                isErr: true,
+                isOk: false,
+                error: {
+                    message: 'Store ID is required',
+                    statusCode: 400,
+                    code: 'VALIDATION_ERROR',
+                },
+            });
 
             await controller.deleteStore(req, res, next);
 

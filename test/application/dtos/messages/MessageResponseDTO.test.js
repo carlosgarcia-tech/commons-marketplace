@@ -18,7 +18,13 @@ describe('MessageResponseDTO', () => {
         updatedAt: new Date(),
     };
 
-    const senderData = { name: 'John', lastName: 'Doe', email: 'john@test.com', profilePicUrl: 'pic.jpg', isApprovedSeller: true };
+    const senderData = {
+        name: 'John',
+        lastName: 'Doe',
+        email: 'john@test.com',
+        profilePicUrl: 'pic.jpg',
+        isApprovedSeller: true,
+    };
     const receiverData = { name: 'Jane', lastName: 'Smith', email: 'jane@test.com' };
 
     it('should format message with id', () => {

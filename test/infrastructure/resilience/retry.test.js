@@ -1,4 +1,8 @@
-import { withRetry, retryable, RetryOptions } from '../../../src/infrastructure/resilience/retry.js';
+import {
+    withRetry,
+    retryable,
+    RetryOptions,
+} from '../../../src/infrastructure/resilience/retry.js';
 
 jest.mock('../../../src/infrastructure/logger/logger.js', () => ({
     log: { info: jest.fn(), debug: jest.fn(), error: jest.fn(), warn: jest.fn() },
@@ -57,10 +61,7 @@ describe('Retry Utilities', () => {
         });
 
         it('should allow fluent configuration', () => {
-            const opts = new RetryOptions()
-                .withMaxRetries(10)
-                .withRetryDelay(500)
-                .withBackoff(3);
+            const opts = new RetryOptions().withMaxRetries(10).withRetryDelay(500).withBackoff(3);
             expect(opts.maxRetries).toBe(10);
             expect(opts.retryDelay).toBe(500);
             expect(opts.backoffMultiplier).toBe(3);

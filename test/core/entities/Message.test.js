@@ -109,44 +109,54 @@ describe('Message Entity', () => {
         });
 
         it('should handle different message types', () => {
-            expect(createMessage({
-                conversationId: 'c1',
-                senderId: 'u1',
-                receiverId: 'u2',
-                content: 'Hi',
-                type: 'image',
-            }).type).toBe('image');
-            expect(createMessage({
-                conversationId: 'c1',
-                senderId: 'u1',
-                receiverId: 'u2',
-                content: 'Hi',
-                type: 'file',
-            }).type).toBe('file');
+            expect(
+                createMessage({
+                    conversationId: 'c1',
+                    senderId: 'u1',
+                    receiverId: 'u2',
+                    content: 'Hi',
+                    type: 'image',
+                }).type,
+            ).toBe('image');
+            expect(
+                createMessage({
+                    conversationId: 'c1',
+                    senderId: 'u1',
+                    receiverId: 'u2',
+                    content: 'Hi',
+                    type: 'file',
+                }).type,
+            ).toBe('file');
         });
 
         it('should handle different statuses', () => {
-            expect(createMessage({
-                conversationId: 'c1',
-                senderId: 'u1',
-                receiverId: 'u2',
-                content: 'Hi',
-                status: 'sent',
-            }).status).toBe('sent');
-            expect(createMessage({
-                conversationId: 'c1',
-                senderId: 'u1',
-                receiverId: 'u2',
-                content: 'Hi',
-                status: 'delivered',
-            }).status).toBe('delivered');
-            expect(createMessage({
-                conversationId: 'c1',
-                senderId: 'u1',
-                receiverId: 'u2',
-                content: 'Hi',
-                status: 'read',
-            }).status).toBe('read');
+            expect(
+                createMessage({
+                    conversationId: 'c1',
+                    senderId: 'u1',
+                    receiverId: 'u2',
+                    content: 'Hi',
+                    status: 'sent',
+                }).status,
+            ).toBe('sent');
+            expect(
+                createMessage({
+                    conversationId: 'c1',
+                    senderId: 'u1',
+                    receiverId: 'u2',
+                    content: 'Hi',
+                    status: 'delivered',
+                }).status,
+            ).toBe('delivered');
+            expect(
+                createMessage({
+                    conversationId: 'c1',
+                    senderId: 'u1',
+                    receiverId: 'u2',
+                    content: 'Hi',
+                    status: 'read',
+                }).status,
+            ).toBe('read');
         });
 
         it('should handle complex metadata', () => {

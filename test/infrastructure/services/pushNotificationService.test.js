@@ -1,4 +1,6 @@
-import PushNotificationService, { generateVapidKeys } from '../../../src/infrastructure/services/pushNotificationService.js';
+import PushNotificationService, {
+    generateVapidKeys,
+} from '../../../src/infrastructure/services/pushNotificationService.js';
 
 jest.mock('web-push', () => ({
     setVapidDetails: jest.fn(),

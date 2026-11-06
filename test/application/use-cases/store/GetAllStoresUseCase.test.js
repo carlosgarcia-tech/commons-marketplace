@@ -29,7 +29,11 @@ describe('GetAllStoresUseCase', () => {
 
         const result = await useCase({}, { page: 1, limit: 10 });
 
-        expect(mockStoreRepository.findAll).toHaveBeenCalledWith({}, { page: 1, limit: 10 }, { createdAt: -1 });
+        expect(mockStoreRepository.findAll).toHaveBeenCalledWith(
+            {},
+            { page: 1, limit: 10 },
+            { createdAt: -1 },
+        );
         expect(result.data).toHaveLength(2);
         expect(result.total).toBe(2);
         expect(result.page).toBe(1);

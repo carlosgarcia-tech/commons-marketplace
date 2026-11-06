@@ -51,7 +51,12 @@ describe('CreateReviewUseCase', () => {
         mockReviewRepository.findByUserIdAndType.mockResolvedValue(null);
         mockReviewRepository.create.mockResolvedValue(createdReview);
 
-        const useCase = createReviewUseCase(mockReviewRepository, mockUserRepository, mockProductRepository, mockStoreRepository);
+        const useCase = createReviewUseCase(
+            mockReviewRepository,
+            mockUserRepository,
+            mockProductRepository,
+            mockStoreRepository,
+        );
         await useCase(reviewData);
 
         expect(mockUserRepository.findById).toHaveBeenCalledWith('user123');
@@ -96,7 +101,12 @@ describe('CreateReviewUseCase', () => {
         mockReviewRepository.findByUserIdAndType.mockResolvedValue(null);
         mockReviewRepository.create.mockResolvedValue(createdReview);
 
-        const useCase = createReviewUseCase(mockReviewRepository, mockUserRepository, mockProductRepository, mockStoreRepository);
+        const useCase = createReviewUseCase(
+            mockReviewRepository,
+            mockUserRepository,
+            mockProductRepository,
+            mockStoreRepository,
+        );
         await useCase(reviewData);
 
         expect(mockReviewRepository.create).toHaveBeenCalled();
@@ -114,7 +124,12 @@ describe('CreateReviewUseCase', () => {
 
         mockUserRepository.findById.mockResolvedValue(null);
 
-        const useCase = createReviewUseCase(mockReviewRepository, mockUserRepository, mockProductRepository, mockStoreRepository);
+        const useCase = createReviewUseCase(
+            mockReviewRepository,
+            mockUserRepository,
+            mockProductRepository,
+            mockStoreRepository,
+        );
 
         await expect(useCase(reviewData)).rejects.toThrow('User not found');
     });
@@ -133,7 +148,12 @@ describe('CreateReviewUseCase', () => {
         mockUserRepository.findById.mockResolvedValue(user);
         mockProductRepository.findById.mockResolvedValue(null);
 
-        const useCase = createReviewUseCase(mockReviewRepository, mockUserRepository, mockProductRepository, mockStoreRepository);
+        const useCase = createReviewUseCase(
+            mockReviewRepository,
+            mockUserRepository,
+            mockProductRepository,
+            mockStoreRepository,
+        );
 
         await expect(useCase(reviewData)).rejects.toThrow('Product not found');
     });
@@ -151,7 +171,12 @@ describe('CreateReviewUseCase', () => {
         mockUserRepository.findById.mockResolvedValue(user);
         mockStoreRepository.findById.mockResolvedValue(null);
 
-        const useCase = createReviewUseCase(mockReviewRepository, mockUserRepository, mockProductRepository, mockStoreRepository);
+        const useCase = createReviewUseCase(
+            mockReviewRepository,
+            mockUserRepository,
+            mockProductRepository,
+            mockStoreRepository,
+        );
 
         await expect(useCase(reviewData)).rejects.toThrow('Store not found');
     });
@@ -168,12 +193,17 @@ describe('CreateReviewUseCase', () => {
 
         const user = { _id: 'user123', name: 'Test User' };
         const product = { _id: 'product123', storeId: 'store123' };
-        
+
         mockUserRepository.findById.mockResolvedValue(user);
         mockProductRepository.findById.mockResolvedValue(product);
         mockReviewRepository.findByUserIdAndType.mockResolvedValue({ id: 'existing-review' });
 
-        const useCase = createReviewUseCase(mockReviewRepository, mockUserRepository, mockProductRepository, mockStoreRepository);
+        const useCase = createReviewUseCase(
+            mockReviewRepository,
+            mockUserRepository,
+            mockProductRepository,
+            mockStoreRepository,
+        );
 
         await expect(useCase(reviewData)).rejects.toThrow('You have already reviewed this product');
     });

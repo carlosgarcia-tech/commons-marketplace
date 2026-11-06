@@ -521,9 +521,7 @@ describe('CreateProductUseCase Tests', () => {
         const result = await useCase(productData, mainImageFile);
 
         expect(result.isErr).toBe(true);
-        expect(result.error.message).toBe(
-            'Subcategory does not belong to the selected category.',
-        );
+        expect(result.error.message).toBe('Subcategory does not belong to the selected category.');
         expect(result.error.statusCode).toBe(422);
 
         expect(log.warn).toHaveBeenCalledWith('Subcategory does not belong to category', {

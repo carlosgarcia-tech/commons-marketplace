@@ -3,9 +3,7 @@ import WishlistModel from '../models/WishlistModel.js';
 
 export const WishlistRepositoryImpl = {
     async findByUserId(userId) {
-        return await WishlistModel.findOne({ userId })
-            .populate('items.productId')
-            .lean();
+        return await WishlistModel.findOne({ userId }).populate('items.productId').lean();
     },
 
     async findByUserIdSimple(userId) {
@@ -34,9 +32,7 @@ export const WishlistRepositoryImpl = {
             updateOptions,
         );
 
-        return await WishlistModel.findById(updated._id)
-            .populate('items.productId')
-            .lean();
+        return await WishlistModel.findById(updated._id).populate('items.productId').lean();
     },
 
     async removeItem(userId, productId, session = null) {
@@ -49,7 +45,9 @@ export const WishlistRepositoryImpl = {
             { userId },
             { $pull: { items: { productId: new mongoose.Types.ObjectId(productId) } } },
             queryOptions,
-        ).populate('items.productId').lean();
+        )
+            .populate('items.productId')
+            .lean();
 
         return updated;
     },

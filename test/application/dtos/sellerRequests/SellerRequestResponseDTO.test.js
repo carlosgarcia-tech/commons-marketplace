@@ -1,4 +1,7 @@
-import { sellerRequestResponseDTO, sellerRequestListResponseDTO } from '../../../../src/application/dtos/sellerRequests/SellerRequestResponseDTO.js';
+import {
+    sellerRequestResponseDTO,
+    sellerRequestListResponseDTO,
+} from '../../../../src/application/dtos/sellerRequests/SellerRequestResponseDTO.js';
 
 jest.mock('../../../../src/infrastructure/logger/logger.js', () => ({
     log: { info: jest.fn(), debug: jest.fn(), error: jest.fn(), warn: jest.fn() },

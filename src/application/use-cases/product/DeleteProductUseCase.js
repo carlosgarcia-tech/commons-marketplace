@@ -86,6 +86,8 @@ export const deleteProductUseCase =
                 error: error.message,
                 stack: error.stack,
             });
-            return err(new InfrastructureError(`Failed to delete product: ${error.message}`, error));
+            return err(
+                new InfrastructureError(`Failed to delete product: ${error.message}`, error),
+            );
         }
     };

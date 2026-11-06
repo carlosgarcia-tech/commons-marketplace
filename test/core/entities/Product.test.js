@@ -37,7 +37,7 @@ describe('Product Entity', () => {
                     price: 100,
                     stock: 10,
                     storeId: 'store123',
-                })
+                }),
             ).toThrow('Product name, price, and stock are required.');
         });
 
@@ -47,7 +47,7 @@ describe('Product Entity', () => {
                     name: 'Test',
                     stock: 10,
                     storeId: 'store123',
-                })
+                }),
             ).toThrow('Product name, price, and stock are required.');
         });
 
@@ -57,7 +57,7 @@ describe('Product Entity', () => {
                     name: 'Test',
                     price: 100,
                     storeId: 'store123',
-                })
+                }),
             ).toThrow('Product name, price, and stock are required.');
         });
 
@@ -67,7 +67,7 @@ describe('Product Entity', () => {
                     name: 'Test',
                     price: 100,
                     stock: 10,
-                })
+                }),
             ).toThrow('Product must be associated with a store.');
         });
 
@@ -108,7 +108,7 @@ describe('Product Entity', () => {
                     price: null,
                     stock: 10,
                     storeId: 'store123',
-                })
+                }),
             ).toThrow('Product name, price, and stock are required.');
         });
 
@@ -119,7 +119,7 @@ describe('Product Entity', () => {
                     price: 100,
                     stock: null,
                     storeId: 'store123',
-                })
+                }),
             ).toThrow('Product name, price, and stock are required.');
         });
 

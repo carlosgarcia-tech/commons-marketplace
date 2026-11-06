@@ -21,10 +21,20 @@ describe('LoginUseCase', () => {
         const authDTO = { email: 'test@example.com', password: 'password' };
         const loginResponse = {
             user: { id: 'user123', user_metadata: { name: 'Test' } }, // eslint-disable-line camelcase
-            session: { access_token: 'test_token', refresh_token: 'refresh_token', expires_at: 1234567890 }, // eslint-disable-line camelcase
+            /* eslint-disable camelcase */
+            session: {
+                access_token: 'test_token',
+                refresh_token: 'refresh_token',
+                expires_at: 1234567890,
+            },
+            /* eslint-enable camelcase */
         };
         authRepository.signIn.mockResolvedValue(loginResponse);
-        userRepository.findById.mockResolvedValue({ _id: 'user123', email: 'test@example.com', role: 'buyer' });
+        userRepository.findById.mockResolvedValue({
+            _id: 'user123',
+            email: 'test@example.com',
+            role: 'buyer',
+        });
 
         const result = await useCase(authDTO);
 

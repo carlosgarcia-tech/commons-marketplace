@@ -8,13 +8,7 @@ export const UpdateUserDTO = {
     }),
 
     validate: (dto) => {
-        const allowedFields = [
-            'name',
-            'lastName',
-            'phoneNumber',
-            'address',
-            'profilePicUrl',
-        ];
+        const allowedFields = ['name', 'lastName', 'phoneNumber', 'address', 'profilePicUrl'];
         const providedFields = Object.keys(dto).filter((key) => dto[key] !== undefined);
         const hasValidFields = providedFields.some((field) => allowedFields.includes(field));
 

@@ -73,7 +73,9 @@ export const createProductUseCase =
                     storeUserId: store.userId,
                     sellerId: productData.sellerId,
                 });
-                return err(new UnauthorizedError('You can only create products for your own stores.'));
+                return err(
+                    new UnauthorizedError('You can only create products for your own stores.'),
+                );
             }
 
             if (store.status !== 'Approved') {
@@ -88,7 +90,7 @@ export const createProductUseCase =
                 );
             }
 
-            const categoryIds = store.categoryIds?.map(id => id.toString()) || [];
+            const categoryIds = store.categoryIds?.map((id) => id.toString()) || [];
             if (
                 categoryIds.length > 0 &&
                 !categoryIds.includes(productData.categoryId.toString())
@@ -100,7 +102,7 @@ export const createProductUseCase =
                 });
                 return err(
                     new ValidationError(
-                        'This category is not allowed for this store. Please select a category from the store\'s allowed categories.',
+                        "This category is not allowed for this store. Please select a category from the store's allowed categories.",
                     ),
                 );
             }
@@ -131,7 +133,9 @@ export const createProductUseCase =
                         subCategoryParent: subCategory.parent,
                     });
                     return err(
-                        new ValidationError('Subcategory does not belong to the selected category.'),
+                        new ValidationError(
+                            'Subcategory does not belong to the selected category.',
+                        ),
                     );
                 }
             }
@@ -184,6 +188,8 @@ export const createProductUseCase =
                     categoryId: productData.categoryId,
                 },
             });
-            return err(new InfrastructureError(`Failed to create product: ${error.message}`, error));
+            return err(
+                new InfrastructureError(`Failed to create product: ${error.message}`, error),
+            );
         }
     };

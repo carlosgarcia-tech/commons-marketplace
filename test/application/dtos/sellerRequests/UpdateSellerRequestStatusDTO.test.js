@@ -16,7 +16,10 @@ describe('UpdateSellerRequestStatusDTO', () => {
     });
 
     it('should use custom adminComment', () => {
-        const result = updateSellerRequestStatusDTO({ status: 'rejected', adminComment: 'Not qualified' });
+        const result = updateSellerRequestStatusDTO({
+            status: 'rejected',
+            adminComment: 'Not qualified',
+        });
         expect(result.adminComment).toBe('Not qualified');
     });
 

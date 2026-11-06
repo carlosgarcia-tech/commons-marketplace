@@ -31,8 +31,22 @@ describe('GetRelatedProductsUseCase', () => {
             price: 100,
         };
         const relatedProducts = [
-            { _id: 'product2', name: 'Related 1', price: 90, mainImageUrl: 'img1.jpg', storeId: 'store2', sellerId: 'seller2' },
-            { _id: 'product3', name: 'Related 2', price: 110, mainImageUrl: 'img2.jpg', storeId: 'store3', sellerId: 'seller3' },
+            {
+                _id: 'product2',
+                name: 'Related 1',
+                price: 90,
+                mainImageUrl: 'img1.jpg',
+                storeId: 'store2',
+                sellerId: 'seller2',
+            },
+            {
+                _id: 'product3',
+                name: 'Related 2',
+                price: 110,
+                mainImageUrl: 'img2.jpg',
+                storeId: 'store3',
+                sellerId: 'seller3',
+            },
         ];
 
         productRepository.findById.mockResolvedValue(currentProduct);
@@ -77,9 +91,30 @@ describe('GetRelatedProductsUseCase', () => {
         const productId = 'product1';
         const currentProduct = { _id: productId, categoryId: 'cat1' };
         const relatedProducts = [
-            { _id: 'p2', name: 'R1', price: 90, mainImageUrl: 'img1.jpg', storeId: 's2', sellerId: 'sel2' },
-            { _id: 'p3', name: 'R2', price: 110, mainImageUrl: 'img2.jpg', storeId: 's3', sellerId: 'sel3' },
-            { _id: 'p4', name: 'R3', price: 120, mainImageUrl: 'img3.jpg', storeId: 's4', sellerId: 'sel4' },
+            {
+                _id: 'p2',
+                name: 'R1',
+                price: 90,
+                mainImageUrl: 'img1.jpg',
+                storeId: 's2',
+                sellerId: 'sel2',
+            },
+            {
+                _id: 'p3',
+                name: 'R2',
+                price: 110,
+                mainImageUrl: 'img2.jpg',
+                storeId: 's3',
+                sellerId: 'sel3',
+            },
+            {
+                _id: 'p4',
+                name: 'R3',
+                price: 120,
+                mainImageUrl: 'img3.jpg',
+                storeId: 's4',
+                sellerId: 'sel4',
+            },
         ];
 
         productRepository.findById.mockResolvedValue(currentProduct);

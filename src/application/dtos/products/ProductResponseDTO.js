@@ -42,12 +42,14 @@ export function createProductResponseDTO(product, options = {}) {
         subCategoryId: product.subCategoryId || null,
         sellerId: product.sellerId,
         storeId: product.storeId,
-        ...(options.includeStore && product.storeName ? {
-            store: {
-                id: product.storeId,
-                storeName: product.storeName,
-            },
-        } : {}),
+        ...(options.includeStore && product.storeName
+            ? {
+                  store: {
+                      id: product.storeId,
+                      storeName: product.storeName,
+                  },
+              }
+            : {}),
         mainImageUrl: product.mainImageUrl,
         imageUrls: product.imageUrls || [],
         status: product.status,

@@ -26,7 +26,10 @@ describe('CreateUserDTO', () => {
         });
 
         it('should preserve provided profilePicUrl', () => {
-            const result = CreateUserDTO.from({ _id: 'user123', profilePicUrl: 'https://example.com/pic.jpg' });
+            const result = CreateUserDTO.from({
+                _id: 'user123',
+                profilePicUrl: 'https://example.com/pic.jpg',
+            });
             expect(result.profilePicUrl).toBe('https://example.com/pic.jpg');
         });
     });

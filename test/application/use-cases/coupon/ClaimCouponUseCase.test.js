@@ -4,7 +4,9 @@ jest.mock('../../../../src/infrastructure/logger/logger.js', () => ({
 
 describe('ClaimCouponUseCase', () => {
     it('should generate a coupon code', async () => {
-        const { claimCouponUseCase } = await import('../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js');
+        const { claimCouponUseCase } = await import(
+            '../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js'
+        );
         const useCase = claimCouponUseCase();
         const result = await useCase('user123');
 
@@ -13,7 +15,9 @@ describe('ClaimCouponUseCase', () => {
     });
 
     it('should include discount percent', async () => {
-        const { claimCouponUseCase } = await import('../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js');
+        const { claimCouponUseCase } = await import(
+            '../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js'
+        );
         const useCase = claimCouponUseCase();
         const result = await useCase('user123');
 
@@ -21,7 +25,9 @@ describe('ClaimCouponUseCase', () => {
     });
 
     it('should have expiresAt date', async () => {
-        const { claimCouponUseCase } = await import('../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js');
+        const { claimCouponUseCase } = await import(
+            '../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js'
+        );
         const useCase = claimCouponUseCase();
         const result = await useCase('user123');
 
@@ -31,7 +37,9 @@ describe('ClaimCouponUseCase', () => {
     });
 
     it('should include message with user id', async () => {
-        const { claimCouponUseCase } = await import('../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js');
+        const { claimCouponUseCase } = await import(
+            '../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js'
+        );
         const useCase = claimCouponUseCase();
         const result = await useCase('user123');
 
@@ -39,7 +47,9 @@ describe('ClaimCouponUseCase', () => {
     });
 
     it('should generate unique codes', async () => {
-        const { claimCouponUseCase } = await import('../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js');
+        const { claimCouponUseCase } = await import(
+            '../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js'
+        );
         const useCase = claimCouponUseCase();
         const result1 = await useCase('user123');
         const result2 = await useCase('user123');
@@ -48,7 +58,9 @@ describe('ClaimCouponUseCase', () => {
     });
 
     it('should handle different user ids', async () => {
-        const { claimCouponUseCase } = await import('../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js');
+        const { claimCouponUseCase } = await import(
+            '../../../../src/application/use-cases/coupon/ClaimCouponUseCase.js'
+        );
         const useCase = claimCouponUseCase();
         const result1 = await useCase('user1');
         const result2 = await useCase('user2');

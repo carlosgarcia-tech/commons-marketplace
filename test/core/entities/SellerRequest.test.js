@@ -63,9 +63,15 @@ describe('SellerRequest Entity', () => {
         });
 
         it('should handle all status values', () => {
-            expect(createSellerRequestEntity({ userId: '1', status: 'pending' }).status).toBe('pending');
-            expect(createSellerRequestEntity({ userId: '2', status: 'approved' }).status).toBe('approved');
-            expect(createSellerRequestEntity({ userId: '3', status: 'rejected' }).status).toBe('rejected');
+            expect(createSellerRequestEntity({ userId: '1', status: 'pending' }).status).toBe(
+                'pending',
+            );
+            expect(createSellerRequestEntity({ userId: '2', status: 'approved' }).status).toBe(
+                'approved',
+            );
+            expect(createSellerRequestEntity({ userId: '3', status: 'rejected' }).status).toBe(
+                'rejected',
+            );
         });
 
         it('should handle empty message', () => {

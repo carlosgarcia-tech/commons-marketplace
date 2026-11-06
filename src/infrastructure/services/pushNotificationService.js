@@ -10,7 +10,7 @@ if (vapidKeys.publicKey && vapidKeys.privateKey) {
     webpush.setVapidDetails(
         'mailto:' + (process.env.VAPID_EMAIL || 'admin@example.com'),
         vapidKeys.publicKey,
-        vapidKeys.privateKey
+        vapidKeys.privateKey,
     );
 }
 
@@ -66,10 +66,7 @@ class PushNotificationService {
         }
 
         try {
-            await webpush.sendNotification(
-                subscription,
-                JSON.stringify(payload)
-            );
+            await webpush.sendNotification(subscription, JSON.stringify(payload));
             log.debug('Push notification sent', { userId });
         } catch (error) {
             if (error.statusCode === 410) {

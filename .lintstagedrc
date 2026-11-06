@@ -1,6 +1,3 @@
 {
-    "*.js": [
-        "npm run lint",
-        "prettier --write"
-    ]
+    "*.js": ["npm run lint", "prettier --write"]
 }

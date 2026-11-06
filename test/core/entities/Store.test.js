@@ -25,20 +25,18 @@ describe('Store Entity', () => {
 
         it('should throw error when userId is missing', () => {
             expect(() => createStore({ storeName: 'My Store' })).toThrow(
-                'Store must have a userId and a storeName.'
+                'Store must have a userId and a storeName.',
             );
         });
 
         it('should throw error when storeName is missing', () => {
             expect(() => createStore({ userId: 'user123' })).toThrow(
-                'Store must have a userId and a storeName.'
+                'Store must have a userId and a storeName.',
             );
         });
 
         it('should throw error when both are missing', () => {
-            expect(() => createStore({})).toThrow(
-                'Store must have a userId and a storeName.'
-            );
+            expect(() => createStore({})).toThrow('Store must have a userId and a storeName.');
         });
 
         it('should set default description to empty string', () => {
@@ -59,9 +57,15 @@ describe('Store Entity', () => {
         });
 
         it('should accept custom status values', () => {
-            expect(createStore({ userId: '1', storeName: 'S1', status: 'Pending' }).status).toBe('Pending');
-            expect(createStore({ userId: '2', storeName: 'S2', status: 'Approved' }).status).toBe('Approved');
-            expect(createStore({ userId: '3', storeName: 'S3', status: 'Rejected' }).status).toBe('Rejected');
+            expect(createStore({ userId: '1', storeName: 'S1', status: 'Pending' }).status).toBe(
+                'Pending',
+            );
+            expect(createStore({ userId: '2', storeName: 'S2', status: 'Approved' }).status).toBe(
+                'Approved',
+            );
+            expect(createStore({ userId: '3', storeName: 'S3', status: 'Rejected' }).status).toBe(
+                'Rejected',
+            );
         });
 
         it('should set id to null when not provided', () => {
@@ -76,7 +80,7 @@ describe('Store Entity', () => {
 
         it('should throw error for empty string values', () => {
             expect(() => createStore({ userId: '', storeName: '' })).toThrow(
-                'Store must have a userId and a storeName.'
+                'Store must have a userId and a storeName.',
             );
         });
     });

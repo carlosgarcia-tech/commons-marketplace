@@ -142,7 +142,10 @@ describe.skip('GetAdminStatsUseCase', () => {
                 'Database connection failed',
             );
 
-            expect(log.error).toHaveBeenCalledWith('Error in GetAdminStatsUseCase', expect.any(Object));
+            expect(log.error).toHaveBeenCalledWith(
+                'Error in GetAdminStatsUseCase',
+                expect.any(Object),
+            );
         });
     });
 
@@ -160,7 +163,9 @@ describe.skip('GetAdminStatsUseCase', () => {
             }));
 
             UserModel.find.mockReturnValue({ lean: jest.fn().mockResolvedValue(largeUsersArray) });
-            ProductModel.find.mockReturnValue({ lean: jest.fn().mockResolvedValue(largeProductsArray) });
+            ProductModel.find.mockReturnValue({
+                lean: jest.fn().mockResolvedValue(largeProductsArray),
+            });
             StoreModel.find.mockReturnValue({ lean: jest.fn().mockResolvedValue([]) });
 
             const result = await getAdminStatsUseCase.execute();

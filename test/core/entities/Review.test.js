@@ -21,55 +21,55 @@ describe('Review Entity', () => {
 
         it('should throw error when userId is missing', () => {
             expect(() => createReview({ commentary: 'Test', score: 5 })).toThrow(
-                'Review must have a valid userId.'
+                'Review must have a valid userId.',
             );
         });
 
         it('should throw error when userId is empty string', () => {
-            expect(() =>
-                createReview({ userId: '', commentary: 'Test', score: 5 })
-            ).toThrow('Review must have a valid userId.');
+            expect(() => createReview({ userId: '', commentary: 'Test', score: 5 })).toThrow(
+                'Review must have a valid userId.',
+            );
         });
 
         it('should throw error when userId is not a string', () => {
-            expect(() =>
-                createReview({ userId: 123, commentary: 'Test', score: 5 })
-            ).toThrow('Review must have a valid userId.');
+            expect(() => createReview({ userId: 123, commentary: 'Test', score: 5 })).toThrow(
+                'Review must have a valid userId.',
+            );
         });
 
         it('should throw error when commentary is missing', () => {
             expect(() => createReview({ userId: 'user123', score: 5 })).toThrow(
-                'Review must have a commentary.'
+                'Review must have a commentary.',
             );
         });
 
         it('should throw error when commentary is empty string', () => {
-            expect(() =>
-                createReview({ userId: 'user123', commentary: '', score: 5 })
-            ).toThrow('Review must have a commentary.');
+            expect(() => createReview({ userId: 'user123', commentary: '', score: 5 })).toThrow(
+                'Review must have a commentary.',
+            );
         });
 
         it('should throw error when score is missing', () => {
-            expect(() =>
-                createReview({ userId: 'user123', commentary: 'Great!' })
-            ).toThrow('Review score must be a number between 1 and 5.');
+            expect(() => createReview({ userId: 'user123', commentary: 'Great!' })).toThrow(
+                'Review score must be a number between 1 and 5.',
+            );
         });
 
         it('should throw error when score is null', () => {
             expect(() =>
-                createReview({ userId: 'user123', commentary: 'Great!', score: null })
+                createReview({ userId: 'user123', commentary: 'Great!', score: null }),
             ).toThrow('Review score must be a number between 1 and 5.');
         });
 
         it('should throw error when score < 1', () => {
             expect(() =>
-                createReview({ userId: 'user123', commentary: 'Great!', score: 0 })
+                createReview({ userId: 'user123', commentary: 'Great!', score: 0 }),
             ).toThrow('Review score must be a number between 1 and 5.');
         });
 
         it('should throw error when score > 5', () => {
             expect(() =>
-                createReview({ userId: 'user123', commentary: 'Great!', score: 6 })
+                createReview({ userId: 'user123', commentary: 'Great!', score: 6 }),
             ).toThrow('Review score must be a number between 1 and 5.');
         });
 
@@ -166,19 +166,19 @@ describe('Review Entity', () => {
 
         it('should throw error for invalid commentary', () => {
             expect(() => updateReview(originalReview, { commentary: '' })).toThrow(
-                'Commentary must be a non-empty string.'
+                'Commentary must be a non-empty string.',
             );
         });
 
         it('should throw error for invalid score', () => {
             expect(() => updateReview(originalReview, { score: 0 })).toThrow(
-                'Score must be a number between 1 and 5.'
+                'Score must be a number between 1 and 5.',
             );
         });
 
         it('should throw error for score > 5', () => {
             expect(() => updateReview(originalReview, { score: 10 })).toThrow(
-                'Score must be a number between 1 and 5.'
+                'Score must be a number between 1 and 5.',
             );
         });
 
@@ -203,9 +203,7 @@ describe('Review Entity', () => {
         it('should update updatedAt timestamp', () => {
             const originalDate = originalReview.updatedAt;
             const updated = updateReview(originalReview, { commentary: 'New' });
-            expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(
-                originalDate.getTime()
-            );
+            expect(updated.updatedAt.getTime()).toBeGreaterThanOrEqual(originalDate.getTime());
         });
 
         it('should throw error for missing review', () => {

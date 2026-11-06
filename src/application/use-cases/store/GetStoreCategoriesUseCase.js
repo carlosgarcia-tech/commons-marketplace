@@ -8,8 +8,7 @@ import { log } from '../../../infrastructure/logger/logger.js';
  * @returns {Function} A function to execute the use case.
  */
 export const getStoreCategoriesUseCase =
-    (storeRepository, productRepository, categoryRepository) =>
-    async (storeId) => {
+    (storeRepository, productRepository, categoryRepository) => async (storeId) => {
         log.info('Getting store categories', { storeId });
 
         const store = await storeRepository.findById(storeId);
@@ -32,7 +31,10 @@ export const getStoreCategoriesUseCase =
                 const category = await categoryRepository.findById(categoryId);
                 if (!category) return null;
 
-                const products = await productRepository.findAll({ categoryId: categoryId.toString(), storeId });
+                const products = await productRepository.findAll({
+                    categoryId: categoryId.toString(),
+                    storeId,
+                });
                 const productCount = products.totalItems || 0;
 
                 return {
@@ -41,7 +43,7 @@ export const getStoreCategoriesUseCase =
                     slug: category.slug,
                     productCount,
                 };
-            })
+            }),
         );
 
         const filteredCategories = categoriesWithCounts.filter((cat) => cat !== null);
