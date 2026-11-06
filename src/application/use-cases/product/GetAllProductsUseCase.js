@@ -54,15 +54,11 @@ export function getAllProductsUseCase(productRepository) {
             const productsDTO = result.data.map((product) => createProductResponseDTO(product));
 
             const response = {
-                products: productsDTO,
-                pagination: {
-                    totalItems: result.totalItems,
-                    totalPages: result.totalPages,
-                    currentPage: result.currentPage,
-                    itemsPerPage: options.limit,
-                    hasNextPage: result.hasNextPage,
-                    hasPrevPage: result.hasPrevPage,
-                },
+                data: productsDTO,
+                total: result.totalItems,
+                page: options.page,
+                limit: options.limit,
+                totalPages: result.totalPages,
             };
 
             cacheManager.set(cacheKey, response, CACHE_TTL.PRODUCTS);

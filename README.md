@@ -185,7 +185,7 @@ src/
 ### Local development
 
 ```bash
-git clone https://github.com/CARLOSGRCIAGRCIA/commons-marketplace.git
+git clone https://github.com/carlosgarcia-tech/commons-marketplace.git
 cd commons-marketplace
 npm install
 cp .env.example .env   # fill in your credentials
@@ -233,4 +233,4 @@ ISC — see [LICENSE](LICENSE) for details.
 
 ---
 
-Built by [Carlos Garcia](https://github.com/CARLOSGRCIAGRCIA)
+Built by [Carlos Garcia](https://github.com/carlosgarcia-tech)

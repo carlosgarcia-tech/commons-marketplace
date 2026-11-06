@@ -259,30 +259,48 @@ describe('ProductController Tests', () => {
             expect(res.status).toHaveBeenCalledWith(200);
         });
 
-        it('should return 400 when page parameter is missing', async () => {
+        it('should use defaults when page parameter is missing', async () => {
             req.query = { limit: '10' };
+            const mockPaginatedResult = {
+                data: [{ id: '1', name: 'Product 1' }],
+                total: 1,
+                page: 1,
+                limit: 10,
+                totalPages: 1,
+            };
+            getAllProductsUseCase.mockResolvedValue(mockPaginatedResult);
 
             await productController.getAllProducts(req, res, next);
 
-            expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json).toHaveBeenCalledWith({
-                error: 'Bad Request',
-                message: 'Los parámetros "page" y "limit" son requeridos',
-                example: '/api/products?page=1&limit=10',
-            });
+            expect(getAllProductsUseCase).toHaveBeenCalledWith(
+                { status: 'Active' },
+                { page: 1, limit: 10 },
+                {},
+            );
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(mockPaginatedResult);
         });
 
-        it('should return 400 when limit parameter is missing', async () => {
+        it('should use defaults when limit parameter is missing', async () => {
             req.query = { page: '1' };
+            const mockPaginatedResult = {
+                data: [{ id: '1', name: 'Product 1' }],
+                total: 1,
+                page: 1,
+                limit: 10,
+                totalPages: 1,
+            };
+            getAllProductsUseCase.mockResolvedValue(mockPaginatedResult);
 
             await productController.getAllProducts(req, res, next);
 
-            expect(res.status).toHaveBeenCalledWith(400);
-            expect(res.json).toHaveBeenCalledWith({
-                error: 'Bad Request',
-                message: 'Los parámetros "page" y "limit" son requeridos',
-                example: '/api/products?page=1&limit=10',
-            });
+            expect(getAllProductsUseCase).toHaveBeenCalledWith(
+                { status: 'Active' },
+                { page: 1, limit: 10 },
+                {},
+            );
+            expect(res.status).toHaveBeenCalledWith(200);
+            expect(res.json).toHaveBeenCalledWith(mockPaginatedResult);
         });
 
         it('should return 400 when page is invalid', async () => {

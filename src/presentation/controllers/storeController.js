@@ -99,9 +99,11 @@ export function createStoreController({
          */
         async getAllStores(req, res, next) {
             try {
-                const { categoryId } = req.query;
+                const { categoryId, page: pageStr, limit: limitStr } = req.query;
                 const filters = categoryId ? { categoryId } : {};
-                const stores = await getAllStoresUseCase(filters);
+                const page = parseInt(pageStr, 10) || 1;
+                const limit = parseInt(limitStr, 10) || 10;
+                const stores = await getAllStoresUseCase(filters, { page, limit });
                 res.status(200).json(stores);
             } catch (error) {
                 next(error);
