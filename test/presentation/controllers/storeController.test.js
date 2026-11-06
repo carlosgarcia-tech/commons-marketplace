@@ -224,41 +224,54 @@ describe('StoreController', () => {
     });
 
     describe('getAllStores', () => {
-        it('should return all approved stores', async () => {
-            const stores = [
-                {
-                    id: 'store123',
-                    storeName: 'Store 1',
-                    isApproved: true,
-                },
-                {
-                    id: 'store456',
-                    storeName: 'Store 2',
-                    isApproved: true,
-                },
-            ];
+        it('should return all approved stores paginated', async () => {
+            const result = {
+                data: [
+                    {
+                        id: 'store123',
+                        storeName: 'Store 1',
+                    },
+                    {
+                        id: 'store456',
+                        storeName: 'Store 2',
+                    },
+                ],
+                total: 2,
+                page: 1,
+                limit: 10,
+                totalPages: 1,
+            };
 
-            getAllStoresUseCase.mockResolvedValue(stores);
+            getAllStoresUseCase.mockResolvedValue(result);
 
             req.query = {};
 
             await controller.getAllStores(req, res, next);
 
-            expect(getAllStoresUseCase).toHaveBeenCalledWith({});
+            expect(getAllStoresUseCase).toHaveBeenCalledWith({}, { page: 1, limit: 10 });
             expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith(stores);
+            expect(res.json).toHaveBeenCalledWith(result);
             expect(next).not.toHaveBeenCalled();
         });
 
-        it('should return empty array when no approved stores exist', async () => {
-            getAllStoresUseCase.mockResolvedValue([]);
+        it('should pass categoryId and custom pagination from query', async () => {
+            getAllStoresUseCase.mockResolvedValue({ data: [], total: 0, page: 2, limit: 5, totalPages: 0 });
+            req.query = { categoryId: 'cat123', page: '2', limit: '5' };
+
+            await controller.getAllStores(req, res, next);
+
+            expect(getAllStoresUseCase).toHaveBeenCalledWith({ categoryId: 'cat123' }, { page: 2, limit: 5 });
+        });
+
+        it('should return empty data when no approved stores exist', async () => {
+            getAllStoresUseCase.mockResolvedValue({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
             req.query = {};
 
             await controller.getAllStores(req, res, next);
 
-            expect(getAllStoresUseCase).toHaveBeenCalledWith({});
+            expect(getAllStoresUseCase).toHaveBeenCalledWith({}, { page: 1, limit: 10 });
             expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.json).toHaveBeenCalledWith([]);
+            expect(res.json).toHaveBeenCalledWith({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 });
         });
 
         it('should handle errors during stores retrieval and call next', async () => {
@@ -268,7 +281,7 @@ describe('StoreController', () => {
 
             await controller.getAllStores(req, res, next);
 
-            expect(getAllStoresUseCase).toHaveBeenCalledWith({});
+            expect(getAllStoresUseCase).toHaveBeenCalledWith({}, { page: 1, limit: 10 });
             expect(next).toHaveBeenCalledWith(error);
             expect(res.status).not.toHaveBeenCalled();
             expect(res.json).not.toHaveBeenCalled();

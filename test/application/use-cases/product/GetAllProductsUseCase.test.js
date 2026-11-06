@@ -66,8 +66,8 @@ describe('GetAllProductsUseCase Tests', () => {
         expect(log.debug).toHaveBeenCalledWith('Fetching all products', expect.any(Object));
         expect(log.info).toHaveBeenCalledWith('Products fetched successfully', expect.any(Object));
 
-        expect(result.products).toHaveLength(2);
-        expect(result.products[0]).toEqual(
+        expect(result.data).toHaveLength(2);
+        expect(result.data[0]).toEqual(
             expect.objectContaining({
                 id: '1',
                 name: 'Product 1',
@@ -78,7 +78,7 @@ describe('GetAllProductsUseCase Tests', () => {
                 status: 'Active',
             }),
         );
-        expect(result.products[1]).toEqual(
+        expect(result.data[1]).toEqual(
             expect.objectContaining({
                 id: '2',
                 name: 'Product 2',
@@ -89,13 +89,12 @@ describe('GetAllProductsUseCase Tests', () => {
                 status: 'Active',
             }),
         );
-        expect(result.pagination).toEqual({
-            totalItems: 2,
+        expect(result).toEqual({
+            data: expect.any(Array),
+            total: 2,
+            page: 1,
+            limit: 10,
             totalPages: 1,
-            currentPage: 1,
-            itemsPerPage: 10,
-            hasNextPage: false,
-            hasPrevPage: false,
         });
     });
 
@@ -226,13 +225,11 @@ describe('GetAllProductsUseCase Tests', () => {
 
         const result = await useCase({}, { page: 2, limit: 10 });
 
-        expect(result.pagination.totalItems).toBe(45);
-        expect(result.pagination.totalPages).toBe(5);
-        expect(result.pagination.currentPage).toBe(2);
-        expect(result.pagination.itemsPerPage).toBe(10);
-        expect(result.pagination.hasNextPage).toBe(true);
-        expect(result.pagination.hasPrevPage).toBe(true);
-        expect(result.products).toHaveLength(10);
+        expect(result.total).toBe(45);
+        expect(result.totalPages).toBe(5);
+        expect(result.page).toBe(2);
+        expect(result.limit).toBe(10);
+        expect(result.data).toHaveLength(10);
     });
 
     it('should handle filters along with pagination and sorting', async () => {
@@ -271,8 +268,8 @@ describe('GetAllProductsUseCase Tests', () => {
             { createdAt: -1 },
         );
 
-        expect(result.products).toHaveLength(1);
-        expect(result.pagination.totalItems).toBe(1);
+        expect(result.data).toHaveLength(1);
+        expect(result.total).toBe(1);
         expect(log.debug).toHaveBeenCalledWith('Applied filters', {
             cleanFilters: { categoryId: '123' },
         });
@@ -291,9 +288,9 @@ describe('GetAllProductsUseCase Tests', () => {
 
         const result = await useCase({}, { page: 1, limit: 10 });
 
-        expect(result.products).toEqual([]);
-        expect(result.pagination.totalItems).toBe(0);
-        expect(result.pagination.totalPages).toBe(0);
+        expect(result.data).toEqual([]);
+        expect(result.total).toBe(0);
+        expect(result.totalPages).toBe(0);
     });
 
     it('should handle repository errors', async () => {

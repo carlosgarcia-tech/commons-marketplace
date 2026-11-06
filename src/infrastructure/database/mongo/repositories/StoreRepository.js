@@ -1,4 +1,5 @@
 import StoreModel from '../models/StoreModel.js';
+import { paginateQuery } from '../utils/pagination.js';
 
 export const StoreRepositoryImpl = {
     async create(storeData) {
@@ -31,8 +32,12 @@ export const StoreRepositoryImpl = {
         return await StoreModel.countDocuments({ userId: userId });
     },
 
-    async findAll() {
-        return await StoreModel.find({ status: 'Approved' }).sort({ createdAt: -1 }).lean();
+    async findAll(filters = {}, options = { page: 1, limit: 10 }, sort = {}) {
+        const query = { ...filters };
+        if (!filters.status) {
+            query.status = 'Approved';
+        }
+        return paginateQuery(StoreModel, query, options, sort);
     },
 
     async updateById(storeId, updateData) {

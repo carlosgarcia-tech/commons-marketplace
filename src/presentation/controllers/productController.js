@@ -120,25 +120,19 @@ export function createProductController({
                     ...otherFilters
                 } = req.query;
 
-                if (!pageStr || !limitStr) {
-                    return res.status(400).json({
-                        error: 'Bad Request',
-                        message: 'Los parámetros "page" y "limit" son requeridos',
-                        example: '/api/products?page=1&limit=10',
-                    });
-                }
+                // Defaults: page=1, limit=10 (aligned with frontend PaginatedResponse)
+                // Only apply defaults if params are missing/empty
+                const page = pageStr ? parseInt(pageStr, 10) : 1;
+                const limit = limitStr ? parseInt(limitStr, 10) : 10;
 
-                const page = parseInt(pageStr, 10);
-                const limit = parseInt(limitStr, 10);
-
-                if (isNaN(page) || page < 1) {
+                if (page < 1) {
                     return res.status(400).json({
                         error: 'Bad Request',
                         message: 'El parámetro "page" debe ser un número mayor o igual a 1',
                     });
                 }
 
-                if (isNaN(limit) || limit < 1 || limit > 100) {
+                if (limit < 1 || limit > 100) {
                     return res.status(400).json({
                         error: 'Bad Request',
                         message: 'El parámetro "limit" debe ser un número entre 1 y 100',
@@ -162,17 +156,11 @@ export function createProductController({
                     if (status !== 'Active') {
                         const supabaseUser = await optionalAuth(req);
                         if (supabaseUser) {
-                            const UserRepositoryImpl = (
-                                await import(
-                                    '../../infrastructure/database/mongo/repositories/userRepository.js'
-                                )
-                            ).UserRepositoryImpl;
+                            const UserRepositoryImpl = (await import('../../infrastructure/database/mongo/repositories/userRepository.js')).UserRepositoryImpl;
                             const mongoUser = await UserRepositoryImpl.findById(supabaseUser.id);
                             const isAdmin = mongoUser && mongoUser.role === 'Admin';
                             // Sellers can filter their own products by any status
-                            const isSeller =
-                                mongoUser &&
-                                (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
+                            const isSeller = mongoUser && (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
                             if (!isAdmin && !isSeller) {
                                 filters.status = 'Active';
                             } else {
@@ -188,16 +176,10 @@ export function createProductController({
                     // Default to Active for public access
                     const supabaseUser = await optionalAuth(req);
                     if (supabaseUser) {
-                        const UserRepositoryImpl = (
-                            await import(
-                                '../../infrastructure/database/mongo/repositories/userRepository.js'
-                            )
-                        ).UserRepositoryImpl;
+                        const UserRepositoryImpl = (await import('../../infrastructure/database/mongo/repositories/userRepository.js')).UserRepositoryImpl;
                         const mongoUser = await UserRepositoryImpl.findById(supabaseUser.id);
                         const isAdmin = mongoUser && mongoUser.role === 'Admin';
-                        const isSeller =
-                            mongoUser &&
-                            (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
+                        const isSeller = mongoUser && (mongoUser.role === 'Seller' || mongoUser.isApprovedSeller);
                         if (!isAdmin && !isSeller) {
                             filters.status = 'Active';
                         }
