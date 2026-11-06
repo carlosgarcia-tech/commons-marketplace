@@ -7,16 +7,37 @@ paths:
                 - Stores
             operationId: getAllStores
             summary: Get all approved stores (Public)
-            description: Retrieve all stores with 'Approved' status. No authentication required.
+            description: >
+                Retrieve stores with 'Approved' status, paginated and sorted by creation date (newest first).
+                Optional filter by categoryId. No authentication required.
+            parameters:
+                - in: query
+                  name: page
+                  schema:
+                      type: integer
+                      default: 1
+                      minimum: 1
+                  description: Page number
+                - in: query
+                  name: limit
+                  schema:
+                      type: integer
+                      default: 10
+                      minimum: 1
+                  description: Items per page
+                - in: query
+                  name: categoryId
+                  schema:
+                      type: string
+                  description: Filter stores that include this category
+                  example: '507f1f77bcf86cd7994390aa'
             responses:
                 '200':
-                    description: List of approved stores
+                    description: Paginated list of approved stores
                     content:
                         application/json:
                             schema:
-                                type: array
-                                items:
-                                    $ref: '#/components/schemas/Store'
+                                $ref: '#/components/schemas/PaginatedStoreList'
                 '500':
                     description: Internal server error
                     content:
@@ -454,6 +475,31 @@ components:
                     format: date-time
                     description: Last update timestamp
                     example: '2024-01-15T14:45:00Z'
+
+        PaginatedStoreList:
+            type: object
+            description: Paginated collection of stores
+            properties:
+                data:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/Store'
+                total:
+                    type: integer
+                    description: Total number of stores matching the query
+                    example: 42
+                page:
+                    type: integer
+                    description: Current page number
+                    example: 1
+                limit:
+                    type: integer
+                    description: Items per page
+                    example: 10
+                totalPages:
+                    type: integer
+                    description: Total number of pages
+                    example: 5
 
         ErrorResponse:
             type: object

@@ -82,21 +82,21 @@ paths:
                                         type: array
                                         items:
                                             $ref: '#/components/schemas/ProductResponse'
-                                    totalItems:
+                                    total:
                                         type: integer
+                                        description: Total number of products matching the query
                                         example: 100
+                                    page:
+                                        type: integer
+                                        description: Current page number
+                                        example: 1
+                                    limit:
+                                        type: integer
+                                        description: Items per page
+                                        example: 10
                                     totalPages:
                                         type: integer
                                         example: 10
-                                    currentPage:
-                                        type: integer
-                                        example: 1
-                                    hasNextPage:
-                                        type: boolean
-                                        example: true
-                                    hasPrevPage:
-                                        type: boolean
-                                        example: false
                 '500':
                     description: Internal server error
                     content:

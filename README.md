@@ -3,7 +3,7 @@
 Production-grade e-commerce backend built with **Node.js, Express and Onion Architecture**. Manages users, stores, products, categories, reviews and real-time messaging — deployed with Docker, Nginx and a Blue/Green CI/CD pipeline for zero-downtime releases.
 
 [![Node.js](https://img.shields.io/badge/Node.js-18+-339933?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Jest](https://img.shields.io/badge/Tests-1010_passed-C21325?style=flat-square&logo=jest&logoColor=white)]()
+[![Jest](https://img.shields.io/badge/Tests-1056_passed-C21325?style=flat-square&logo=jest&logoColor=white)]()
 [![Coverage](https://img.shields.io/badge/Coverage-80%25-brightgreen?style=flat-square)]()
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue?style=flat-square)]()
 
@@ -15,7 +15,7 @@ This started as a straightforward REST API and became an exercise in making a ba
 
 **1. Onion Architecture** — so the domain layer has zero knowledge of MongoDB, Supabase, or any external dependency. This made testing use cases without a real database trivial, and swapping infrastructure components painless.
 
-**2. 1010 tests across 114 suites** — written before most features were complete. Use cases at 100%, core entities at 100%, validators at 100%. The coverage discipline forced cleaner interfaces between layers.
+**2. 1056 tests across 116 suites** — written before most features were complete. Use cases at 100%, core entities at 100%, validators at 100%. The coverage discipline forced cleaner interfaces between layers.
 
 **3. Dual real-time implementations** — the system has both a native Socket.io server and an Ably integration. Both live in the infrastructure layer and implement the same repository interface, so the core never knows which one is active. This was possible precisely because of Onion — the real-time transport is a swappable detail, not a core dependency.
 
@@ -92,8 +92,8 @@ Integration tests against a real MongoDB instance are slow and flaky in CI. By m
 ## Test coverage
 
 ```
-Test Suites:  114 passed, 114 total
-Tests:       1010 passed, 1010 total
+Test Suites:  115 passed, 116 total (1 integration suite, opt-in)
+Tests:        1056 passed, 1063 total (7 skipped)
 Statements:  ~80%
 Branches:    ~70%
 ```
@@ -178,7 +178,7 @@ src/
 ### Requirements
 
 - Node.js 18+
-- Docker + Docker Compose
+- [MongoDB Atlas](https://www.mongodb.com/atlas) account (free M0 tier works)
 - [Supabase](https://supabase.com) project (free tier)
 - [Ably](https://ably.com) account (free tier)
 
@@ -189,17 +189,24 @@ git clone https://github.com/carlosgarcia-tech/commons-marketplace.git
 cd commons-marketplace
 npm install
 cp .env.example .env   # fill in your credentials
-docker-compose up -d   # starts MongoDB
 npm run dev
 ```
 
-API docs: `https://localhost:8443/api-docs`
+> **Atlas**: before the first run, add your current IP to the cluster's
+> **Network Access → IP Access List** in the Atlas dashboard, or the TLS
+> handshake will be rejected with `tlsv1 alert internal error`.
+>
+> **Sin Docker**: a local MongoDB via `docker-compose up -d` also works —
+> point `DB_URL` to `mongodb://admin:password@localhost:27017/...` (see
+> `.env.example`).
+
+API docs: `http://localhost:3000/api-docs`
 
 ### Environment variables
 
 ```env
-# MongoDB
-DB_URL=mongodb://admin:admin123@mongodb:27017/CommonMarketplaceServiceDB?authSource=admin
+# MongoDB Atlas
+DB_URL=mongodb+srv://<user>:<password>@cluster0.xxxxx.mongodb.net/CommonMarketplaceServiceDB?retryWrites=true&w=majority
 
 # Supabase
 SUPABASE_URL=https://your-project.supabase.co
@@ -214,6 +221,9 @@ ABLY_API_KEY=your_ably_key
 PORT=3000
 NODE_ENV=development
 ```
+
+`DB_URL`, the four Supabase variables and `ABLY_API_KEY` are required — the
+server refuses to start without them. See `.env.example` for the full list.
 
 ### Scripts
 
