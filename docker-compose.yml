@@ -6,49 +6,13 @@ networks:
         driver: bridge
         name: front-end
 
-volumes:
-    mongo-data:
-        driver: local
-
 services:
-    mongodb:
-        image: docker.io/mongo:8.0.8
-        container_name: neibor-buy-mongo
-
-        restart: unless-stopped
-
-        environment:
-            MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
-            MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
-            MONGO_INITDB_DATABASE: ${DB_NAME}
-
-        ports:
-            - '${DB_PORT}:27017'
-
-        volumes:
-            - mongo-data:/data/db
-
-        healthcheck:
-            test: ['CMD', 'mongosh', '--eval', 'db.adminCommand({ ping: 1 })']
-            interval: 30s
-            timeout: 10s
-            retries: 3
-            start_period: 40s
-
-        logging:
-            driver: 'json-file'
-            options:
-                max-size: '10m'
-                max-file: '3'
-
-        networks:
-            - back-end
     app:
         build:
             context: .
             dockerfile: Dockerfile
 
-        container_name: neibor-buy-backend
+        container_name: commons-marketplace-app
         restart: unless-stopped
 
         env_file:
@@ -56,10 +20,6 @@ services:
 
         expose:
             - '3000'
-
-        depends_on:
-            mongodb:
-                condition: service_healthy
 
         healthcheck:
             test:
@@ -81,15 +41,14 @@ services:
 
     nginx:
         image: docker.io/library/nginx:alpine
-        container_name: neibor-buy-nginx
+        container_name: commons-marketplace-nginx
         restart: unless-stopped
 
         ports:
             - '8444:443'
 
         environment:
-            # Rendered into nginx config by the image entrypoint
-            UPSTREAM_HOST: app
+            UPSTREAM_HOST: commons-marketplace-app
             UPSTREAM_PORT: '3000'
 
         volumes:
